@@ -11,7 +11,7 @@ export async function generatePredictionQuestions(
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
   const prompt = `
-You are generating prediction questions for an F1 fantasy game called OffGrid.
+You are generating prediction questions for an F1 fantasy game called LapLogic.
 The upcoming race is: ${raceName} at ${circuit}, ${country} (Round ${round}).
 
 Generate exactly 3 prediction questions that F1 fans would find exciting to bet on.

@@ -1,2 +1,38 @@
 # dependencies
 node_modules/
+
+# environments
+.env
+.env.*
+!.env.example
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/build/
+
+# Node.js build output
+backend/dist/
+backend/build/
+
+# Hardhat
+contracts/artifacts/
+contracts/cache/
+contracts/typechain-types/
+contracts/typechain/
+contracts/coverage/
+contracts/coverage.json
+contracts/solidity-files-cache.json
+
+# misc logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json

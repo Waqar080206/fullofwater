@@ -50,9 +50,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.GameCoin__factory>;
     getContractFactory(
-      name: "OffGridCore",
+      name: "LapLogicCore",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.OffGridCore__factory>;
+    ): Promise<Contracts.LapLogicCore__factory>;
     getContractFactory(
       name: "RankRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -104,10 +104,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.GameCoin>;
     getContractAt(
-      name: "OffGridCore",
+      name: "LapLogicCore",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.OffGridCore>;
+    ): Promise<Contracts.LapLogicCore>;
     getContractAt(
       name: "RankRegistry",
       address: string | ethers.Addressable,
@@ -151,9 +151,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.GameCoin>;
     deployContract(
-      name: "OffGridCore",
+      name: "LapLogicCore",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.OffGridCore>;
+    ): Promise<Contracts.LapLogicCore>;
     deployContract(
       name: "RankRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -205,10 +205,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.GameCoin>;
     deployContract(
-      name: "OffGridCore",
+      name: "LapLogicCore",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.OffGridCore>;
+    ): Promise<Contracts.LapLogicCore>;
     deployContract(
       name: "RankRegistry",
       args: any[],

@@ -1,4 +1,4 @@
-# BACKEND.md — OffGrid F1 Fantasy Platform
+# BACKEND.md — LapLogic F1 Fantasy Platform
 
 ## Overview
 
@@ -33,7 +33,7 @@ ADMIN_PRIVATE_KEY=0xYOUR_DEPLOYER_PRIVATE_KEY
 
 # Deployed contract addresses
 GAMECOIN_ADDRESS=0x...
-OFFGRID_CORE_ADDRESS=0x...
+LAPLOGIC_CORE_ADDRESS=0x...
 RANK_REGISTRY_ADDRESS=0x...
 
 ADMIN_WALLET=0xYOUR_ADMIN_WALLET_ADDRESS
@@ -421,7 +421,7 @@ export async function generatePredictionQuestions(
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
   const prompt = `
-You are generating prediction questions for an F1 fantasy game called OffGrid.
+You are generating prediction questions for an F1 fantasy game called LapLogic.
 The upcoming race is: ${raceName} at ${circuit}, ${country} (Round ${round}).
 
 Generate exactly 3 prediction questions that F1 fans would find exciting to bet on.
@@ -467,7 +467,7 @@ const RANK_REGISTRY_ABI = [
   'function setRank(address user, uint256 rank, string calldata rankName) external',
 ];
 
-const OFFGRID_CORE_ABI = [
+const LAPLOGIC_CORE_ABI = [
   'function distributeReward(address user, uint256 amount) external',
 ];
 
@@ -502,8 +502,8 @@ export async function distributeRewardOnChain(
   // Convert GameCoins to token units (18 decimals)
   const wallet = getAdminWallet();
   const contract = new ethers.Contract(
-    process.env.OFFGRID_CORE_ADDRESS!,
-    OFFGRID_CORE_ABI,
+    process.env.LAPLOGIC_CORE_ADDRESS!,
+    LAPLOGIC_CORE_ABI,
     wallet
   );
   const amount = ethers.parseUnits(amountInGameCoins.toString(), 18);
@@ -573,7 +573,7 @@ const router = Router();
 // Returns a nonce message the wallet must sign
 router.get('/nonce/:address', async (req: Request, res: Response) => {
   const address = req.params.address.toLowerCase();
-  const nonce = `Sign this message to login to OffGrid Fantasy.\nWallet: ${address}\nNonce: ${Date.now()}`;
+  const nonce = `Sign this message to login to LapLogic Fantasy.\nWallet: ${address}\nNonce: ${Date.now()}`;
   res.json({ nonce });
 });
 
@@ -966,7 +966,7 @@ export const CONSTRUCTORS = [
 
 ```json
 {
-  "name": "offgrid-backend",
+  "name": "laplogic-backend",
   "version": "1.0.0",
   "scripts": {
     "dev": "ts-node-dev --respawn src/index.ts",
@@ -1001,4 +1001,4 @@ export const CONSTRUCTORS = [
 2. **Team Build**: User picks 3 drivers + 1 constructor under 60M → POST `/api/team` → locked when admin sets race status to `qualifying`
 3. **Prediction**: Admin triggers Gemini generation → questions stored → users bet GameCoins → admin settles after race → winners get coins back × multiplier
 4. **Scoring**: Admin POSTs results to `/api/admin/race/:id/results` → scoring service calculates → user totalPoints updated → rank recalculated → on-chain rank write triggered
-5. **Reward**: User's GameCoin balance tracked in MongoDB (off-chain mirror) → redemption triggers `distributeReward` on OffGridCore contract → ETH equivalent sent on-chain
+5. **Reward**: User's GameCoin balance tracked in MongoDB (off-chain mirror) → redemption triggers `distributeReward` on LapLogicCore contract → ETH equivalent sent on-chain

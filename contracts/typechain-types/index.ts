@@ -24,7 +24,7 @@ export type { ReentrancyGuard } from "./@openzeppelin/contracts/utils/Reentrancy
 export { ReentrancyGuard__factory } from "./factories/@openzeppelin/contracts/utils/ReentrancyGuard__factory";
 export type { GameCoin } from "./contracts/GameCoin";
 export { GameCoin__factory } from "./factories/contracts/GameCoin__factory";
-export type { OffGridCore } from "./contracts/OffGridCore";
-export { OffGridCore__factory } from "./factories/contracts/OffGridCore__factory";
+export type { LapLogicCore } from "./contracts/LapLogicCore";
+export { LapLogicCore__factory } from "./factories/contracts/LapLogicCore__factory";
 export type { RankRegistry } from "./contracts/RankRegistry";
 export { RankRegistry__factory } from "./factories/contracts/RankRegistry__factory";

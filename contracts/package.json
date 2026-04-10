@@ -1,5 +1,5 @@
 {
-  "name": "offgrid-contracts",
+  "name": "laplogic-contracts",
   "version": "1.0.0",
   "scripts": {
     "compile": "hardhat compile",

@@ -2,7 +2,7 @@ import { run } from 'hardhat';
 
 async function main() {
   const GAMECOIN = process.env.GAMECOIN_ADDRESS!;
-  const OFFGRID_CORE = process.env.OFFGRID_CORE_ADDRESS!;
+  const LAPLOGIC_CORE = process.env.LAPLOGIC_CORE_ADDRESS!;
   const RANK_REGISTRY = process.env.RANK_REGISTRY_ADDRESS!;
 
   await run('verify:verify', {
@@ -11,7 +11,7 @@ async function main() {
   });
 
   await run('verify:verify', {
-    address: OFFGRID_CORE,
+    address: LAPLOGIC_CORE,
     constructorArguments: [GAMECOIN, 3000, 10],
   });
 

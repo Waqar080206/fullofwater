@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('offgrid_token');
+    const savedToken = localStorage.getItem('laplogic_token');
     if (savedToken) {
       setToken(savedToken);
       // Optionally decode and set user from token or fetch /me endpoint
@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { token: jwt, user: userData } = await authAPI.verify(address, signature, nonce);
       setToken(jwt);
       setUser(userData);
-      localStorage.setItem('offgrid_token', jwt);
+      localStorage.setItem('laplogic_token', jwt);
     } catch (err) {
       console.error('Login failed', err);
     } finally {
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('offgrid_token');
+    localStorage.removeItem('laplogic_token');
   };
 
   const refreshUser = async () => {

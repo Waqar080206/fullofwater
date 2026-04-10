@@ -2,5 +2,5 @@
 /* tslint:disable */
 /* eslint-disable */
 export { GameCoin__factory } from "./GameCoin__factory";
-export { OffGridCore__factory } from "./OffGridCore__factory";
+export { LapLogicCore__factory } from "./LapLogicCore__factory";
 export { RankRegistry__factory } from "./RankRegistry__factory";

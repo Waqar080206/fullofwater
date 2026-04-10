@@ -10,7 +10,7 @@ export const GAMECOIN_ABI = [
   'function decimals() view returns (uint8)',
 ];
 
-export const OFFGRID_CORE_ABI = [
+export const LAPLOGIC_CORE_ABI = [
   'function enterRace(bytes32 raceId) external',
   'function hasUserEntered(bytes32 raceId, address user) view returns (bool)',
   'function getRacePool(bytes32 raceId) view returns (uint256 totalPool, uint256 entryCount, bool isSettled)',
@@ -23,7 +23,7 @@ export const RANK_REGISTRY_ABI = [
 
 const ADDRESSES = {
   gameCoin: process.env.NEXT_PUBLIC_GAMECOIN_ADDRESS!,
-  offGridCore: process.env.NEXT_PUBLIC_OFFGRID_CORE_ADDRESS!,
+  lapLogicCore: process.env.NEXT_PUBLIC_LAPLOGIC_CORE_ADDRESS!,
   rankRegistry: process.env.NEXT_PUBLIC_RANK_REGISTRY_ADDRESS!,
 };
 
@@ -31,8 +31,8 @@ export function getGameCoinContract(signerOrProvider: any) {
   return new ethers.Contract(ADDRESSES.gameCoin, GAMECOIN_ABI, signerOrProvider);
 }
 
-export function getOffGridCoreContract(signerOrProvider: any) {
-  return new ethers.Contract(ADDRESSES.offGridCore, OFFGRID_CORE_ABI, signerOrProvider);
+export function getLapLogicCoreContract(signerOrProvider: any) {
+  return new ethers.Contract(ADDRESSES.lapLogicCore, LAPLOGIC_CORE_ABI, signerOrProvider);
 }
 
 export function getRankRegistryContract(provider: any) {
@@ -64,16 +64,16 @@ export async function getOnChainBalance(address: string, provider: any): Promise
 export async function enterPaidRace(signer: any, raceMongoId: string, entryFeeCoins: number) {
   const raceId = mongoIdToBytes32(raceMongoId);
 
-  // Approve OffGridCore to spend GameCoins
+  // Approve LapLogicCore to spend GameCoins
   const gameCoin = getGameCoinContract(signer);
   const approveTx = await gameCoin.approve(
-    ADDRESSES.offGridCore,
+    ADDRESSES.lapLogicCore,
     ethers.parseUnits(entryFeeCoins.toString(), 18)
   );
   await approveTx.wait();
 
   // Enter race
-  const core = getOffGridCoreContract(signer);
+  const core = getLapLogicCoreContract(signer);
   const enterTx = await core.enterRace(raceId);
   return enterTx.wait();
 }

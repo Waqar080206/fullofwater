@@ -1,20 +1,53 @@
 {
   "pages": {
-    "/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+    "/_not-found/page": [
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-e3489de6ce1f07f6.js",
+      "static/chunks/23-9977401f0b77124a.js",
+      "static/chunks/main-app-51d5aee1895a6ee7.js",
+      "static/chunks/app/_not-found/page-43b5715fe82ab467.js"
     ],
     "/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/css-app_globals_css.css",
-      "static/chunks/app/layout.js"
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-e3489de6ce1f07f6.js",
+      "static/chunks/23-9977401f0b77124a.js",
+      "static/chunks/main-app-51d5aee1895a6ee7.js",
+      "static/css/ea8a1a8964f7338d.css",
+      "static/chunks/959-68a5b1d1db54035c.js",
+      "static/chunks/138-22ac6d7317504010.js",
+      "static/chunks/app/layout-137fbf3e59d924cf.js"
     ],
     "/dashboard/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/page.js"
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-e3489de6ce1f07f6.js",
+      "static/chunks/23-9977401f0b77124a.js",
+      "static/chunks/main-app-51d5aee1895a6ee7.js",
+      "static/chunks/959-68a5b1d1db54035c.js",
+      "static/chunks/app/dashboard/page-b4aea7de8a95e1cc.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-e3489de6ce1f07f6.js",
+      "static/chunks/23-9977401f0b77124a.js",
+      "static/chunks/main-app-51d5aee1895a6ee7.js",
+      "static/chunks/959-68a5b1d1db54035c.js",
+      "static/chunks/app/page-0f48b505375244ba.js"
+    ],
+    "/predict/[raceId]/page": [
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-e3489de6ce1f07f6.js",
+      "static/chunks/23-9977401f0b77124a.js",
+      "static/chunks/main-app-51d5aee1895a6ee7.js",
+      "static/chunks/959-68a5b1d1db54035c.js",
+      "static/chunks/app/predict/[raceId]/page-f18c264c2e7adc32.js"
+    ],
+    "/team/page": [
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-e3489de6ce1f07f6.js",
+      "static/chunks/23-9977401f0b77124a.js",
+      "static/chunks/main-app-51d5aee1895a6ee7.js",
+      "static/chunks/959-68a5b1d1db54035c.js",
+      "static/chunks/app/team/page-a2550d0e52d9ee77.js"
     ]
   }
 }

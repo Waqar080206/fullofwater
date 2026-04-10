@@ -1,4 +1,4 @@
-# FRONTEND.md — OffGrid F1 Fantasy Platform
+# FRONTEND.md — LapLogic F1 Fantasy Platform
 
 ## Overview
 
@@ -151,7 +151,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Auto-reconnect if wallet was previously connected
-    const savedAddress = localStorage.getItem('offgrid_wallet');
+    const savedAddress = localStorage.getItem('laplogic_wallet');
     if (savedAddress && window.ethereum) {
       connect();
     }
@@ -195,7 +195,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setProvider(_provider);
       setSigner(_signer);
       setAddress(_address);
-      localStorage.setItem('offgrid_wallet', _address);
+      localStorage.setItem('laplogic_wallet', _address);
     } catch (err) {
       console.error('Wallet connect failed', err);
     } finally {
@@ -207,8 +207,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setAddress(null);
     setSigner(null);
     setProvider(null);
-    localStorage.removeItem('offgrid_wallet');
-    localStorage.removeItem('offgrid_token');
+    localStorage.removeItem('laplogic_wallet');
+    localStorage.removeItem('laplogic_token');
   };
 
   return (
@@ -263,7 +263,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('offgrid_token');
+    const savedToken = localStorage.getItem('laplogic_token');
     if (savedToken) {
       setToken(savedToken);
       // Optionally decode and set user from token or fetch /me endpoint
@@ -282,7 +282,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { token: jwt, user: userData } = await authAPI.verify(address, signature, nonce);
       setToken(jwt);
       setUser(userData);
-      localStorage.setItem('offgrid_token', jwt);
+      localStorage.setItem('laplogic_token', jwt);
     } catch (err) {
       console.error('Login failed', err);
     } finally {
@@ -293,7 +293,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('offgrid_token');
+    localStorage.removeItem('laplogic_token');
   };
 
   const refreshUser = async () => {
@@ -394,7 +394,7 @@ export const GAMECOIN_ABI = [
   'function decimals() view returns (uint8)',
 ];
 
-export const OFFGRID_CORE_ABI = [
+export const LAPLOGIC_CORE_ABI = [
   'function enterRace(bytes32 raceId) external',
   'function hasUserEntered(bytes32 raceId, address user) view returns (bool)',
   'function getRacePool(bytes32 raceId) view returns (uint256 totalPool, uint256 entryCount, bool isSettled)',
@@ -407,7 +407,7 @@ export const RANK_REGISTRY_ABI = [
 
 const ADDRESSES = {
   gameCoin: process.env.NEXT_PUBLIC_GAMECOIN_ADDRESS!,
-  offGridCore: process.env.NEXT_PUBLIC_OFFGRID_CORE_ADDRESS!,
+  lapLogicCore: process.env.NEXT_PUBLIC_LAPLOGIC_CORE_ADDRESS!,
   rankRegistry: process.env.NEXT_PUBLIC_RANK_REGISTRY_ADDRESS!,
 };
 
@@ -415,8 +415,8 @@ export function getGameCoinContract(signerOrProvider: any) {
   return new ethers.Contract(ADDRESSES.gameCoin, GAMECOIN_ABI, signerOrProvider);
 }
 
-export function getOffGridCoreContract(signerOrProvider: any) {
-  return new ethers.Contract(ADDRESSES.offGridCore, OFFGRID_CORE_ABI, signerOrProvider);
+export function getLapLogicCoreContract(signerOrProvider: any) {
+  return new ethers.Contract(ADDRESSES.lapLogicCore, LAPLOGIC_CORE_ABI, signerOrProvider);
 }
 
 export function getRankRegistryContract(provider: any) {
@@ -448,16 +448,16 @@ export async function getOnChainBalance(address: string, provider: any): Promise
 export async function enterPaidRace(signer: any, raceMongoId: string, entryFeeCoins: number) {
   const raceId = mongoIdToBytes32(raceMongoId);
 
-  // Approve OffGridCore to spend GameCoins
+  // Approve LapLogicCore to spend GameCoins
   const gameCoin = getGameCoinContract(signer);
   const approveTx = await gameCoin.approve(
-    ADDRESSES.offGridCore,
+    ADDRESSES.lapLogicCore,
     ethers.parseUnits(entryFeeCoins.toString(), 18)
   );
   await approveTx.wait();
 
   // Enter race
-  const core = getOffGridCoreContract(signer);
+  const core = getLapLogicCoreContract(signer);
   const enterTx = await core.enterRace(raceId);
   return enterTx.wait();
 }
@@ -546,7 +546,7 @@ import { AuthProvider } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
 
 export const metadata: Metadata = {
-  title: 'OffGrid — F1 Fantasy on Chain',
+  title: 'LapLogic — F1 Fantasy on Chain',
   description: 'Build your F1 fantasy team, predict race outcomes, earn on-chain.',
 };
 
@@ -1285,7 +1285,7 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_GAMECOIN_ADDRESS: process.env.NEXT_PUBLIC_GAMECOIN_ADDRESS,
-    NEXT_PUBLIC_OFFGRID_CORE_ADDRESS: process.env.NEXT_PUBLIC_OFFGRID_CORE_ADDRESS,
+    NEXT_PUBLIC_LAPLOGIC_CORE_ADDRESS: process.env.NEXT_PUBLIC_LAPLOGIC_CORE_ADDRESS,
     NEXT_PUBLIC_RANK_REGISTRY_ADDRESS: process.env.NEXT_PUBLIC_RANK_REGISTRY_ADDRESS,
   },
 };
@@ -1300,7 +1300,7 @@ module.exports = nextConfig;
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
 NEXT_PUBLIC_GAMECOIN_ADDRESS=0x...
-NEXT_PUBLIC_OFFGRID_CORE_ADDRESS=0x...
+NEXT_PUBLIC_LAPLOGIC_CORE_ADDRESS=0x...
 NEXT_PUBLIC_RANK_REGISTRY_ADDRESS=0x...
 ```
 
@@ -1310,7 +1310,7 @@ NEXT_PUBLIC_RANK_REGISTRY_ADDRESS=0x...
 
 ```json
 {
-  "name": "offgrid-frontend",
+  "name": "laplogic-frontend",
   "version": "1.0.0",
   "scripts": {
     "dev": "next dev",

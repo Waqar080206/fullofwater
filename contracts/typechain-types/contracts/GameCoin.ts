@@ -31,16 +31,16 @@ export interface GameCoinInterface extends Interface {
       | "balanceOf"
       | "decimals"
       | "getBalance"
+      | "lapLogicCore"
       | "mint"
       | "mintReward"
       | "name"
-      | "offGridCore"
       | "owner"
       | "purchase"
       | "ratePerEth"
       | "redeem"
       | "renounceOwnership"
-      | "setOffGridCore"
+      | "setLapLogicCore"
       | "setRate"
       | "symbol"
       | "totalSupply"
@@ -79,6 +79,10 @@ export interface GameCoinInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "lapLogicCore",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "mint",
     values: [AddressLike, BigNumberish]
   ): string;
@@ -87,10 +91,6 @@ export interface GameCoinInterface extends Interface {
     values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "offGridCore",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(functionFragment: "purchase", values?: undefined): string;
   encodeFunctionData(
@@ -106,7 +106,7 @@ export interface GameCoinInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "setOffGridCore",
+    functionFragment: "setLapLogicCore",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
@@ -140,13 +140,13 @@ export interface GameCoinInterface extends Interface {
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getBalance", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "lapLogicCore",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mintReward", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "offGridCore",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "purchase", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ratePerEth", data: BytesLike): Result;
@@ -156,7 +156,7 @@ export interface GameCoinInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setOffGridCore",
+    functionFragment: "setLapLogicCore",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setRate", data: BytesLike): Result;
@@ -358,6 +358,8 @@ export interface GameCoin extends BaseContract {
 
   getBalance: TypedContractMethod<[user: AddressLike], [bigint], "view">;
 
+  lapLogicCore: TypedContractMethod<[], [string], "view">;
+
   mint: TypedContractMethod<
     [to: AddressLike, amount: BigNumberish],
     [void],
@@ -371,8 +373,6 @@ export interface GameCoin extends BaseContract {
   >;
 
   name: TypedContractMethod<[], [string], "view">;
-
-  offGridCore: TypedContractMethod<[], [string], "view">;
 
   owner: TypedContractMethod<[], [string], "view">;
 
@@ -388,7 +388,7 @@ export interface GameCoin extends BaseContract {
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
-  setOffGridCore: TypedContractMethod<
+  setLapLogicCore: TypedContractMethod<
     [_core: AddressLike],
     [void],
     "nonpayable"
@@ -452,6 +452,9 @@ export interface GameCoin extends BaseContract {
     nameOrSignature: "getBalance"
   ): TypedContractMethod<[user: AddressLike], [bigint], "view">;
   getFunction(
+    nameOrSignature: "lapLogicCore"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "mint"
   ): TypedContractMethod<
     [to: AddressLike, amount: BigNumberish],
@@ -469,9 +472,6 @@ export interface GameCoin extends BaseContract {
     nameOrSignature: "name"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "offGridCore"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
@@ -487,7 +487,7 @@ export interface GameCoin extends BaseContract {
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "setOffGridCore"
+    nameOrSignature: "setLapLogicCore"
   ): TypedContractMethod<[_core: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setRate"

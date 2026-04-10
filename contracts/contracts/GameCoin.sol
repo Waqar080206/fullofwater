@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract GameCoin is ERC20, Ownable {
-    // Address of OffGridCore contract — allowed to mint/burn
-    address public offGridCore;
+    // Address of LapLogicCore contract — allowed to mint/burn
+    address public lapLogicCore;
 
     // ETH to GameCoin exchange rate: 1 ETH = X GameCoins
     // Set by owner (admin), updated manually
@@ -22,13 +22,13 @@ contract GameCoin is ERC20, Ownable {
     }
 
     modifier onlyCoreOrOwner() {
-        require(msg.sender == offGridCore || msg.sender == owner(), "Not authorized");
+        require(msg.sender == lapLogicCore || msg.sender == owner(), "Not authorized");
         _;
     }
 
-    // Owner sets the OffGridCore contract address after deployment
-    function setOffGridCore(address _core) external onlyOwner {
-        offGridCore = _core;
+    // Owner sets the LapLogicCore contract address after deployment
+    function setLapLogicCore(address _core) external onlyOwner {
+        lapLogicCore = _core;
         emit CoreUpdated(_core);
     }
 
@@ -64,7 +64,7 @@ contract GameCoin is ERC20, Ownable {
         emit Redeemed(msg.sender, amountCoins, ethToReturn);
     }
 
-    // OffGridCore can mint rewards (prediction wins)
+    // LapLogicCore can mint rewards (prediction wins)
     function mintReward(address to, uint256 amountCoins) external onlyCoreOrOwner {
         _mint(to, amountCoins * 10 ** decimals());
     }

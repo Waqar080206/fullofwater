@@ -1,4 +1,4 @@
-# OffGrid — F1 Fantasy on Chain
+# LapLogic — F1 Fantasy on Chain
 
 Pick 3 drivers + 1 constructor. Predict race outcomes. Earn GameCoins. Redeem to ETH.
 
@@ -15,7 +15,7 @@ Pick 3 drivers + 1 constructor. Predict race outcomes. Earn GameCoins. Redeem to
 ## Structure
 
 ```
-offgrid/
+laplogic/
 ├── frontend/
 ├── backend/
 ├── contracts/

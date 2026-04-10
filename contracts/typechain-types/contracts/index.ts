@@ -2,5 +2,5 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { GameCoin } from "./GameCoin";
-export type { OffGridCore } from "./OffGridCore";
+export type { LapLogicCore } from "./LapLogicCore";
 export type { RankRegistry } from "./RankRegistry";

@@ -24,7 +24,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Auto-reconnect if wallet was previously connected
-    const savedAddress = localStorage.getItem('offgrid_wallet');
+    const savedAddress = localStorage.getItem('laplogic_wallet');
     if (savedAddress && window.ethereum) {
       connect();
     }
@@ -68,7 +68,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setProvider(_provider);
       setSigner(_signer);
       setAddress(_address);
-      localStorage.setItem('offgrid_wallet', _address);
+      localStorage.setItem('laplogic_wallet', _address);
     } catch (err) {
       console.error('Wallet connect failed', err);
     } finally {
@@ -80,8 +80,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setAddress(null);
     setSigner(null);
     setProvider(null);
-    localStorage.removeItem('offgrid_wallet');
-    localStorage.removeItem('offgrid_token');
+    localStorage.removeItem('laplogic_wallet');
+    localStorage.removeItem('laplogic_token');
   };
 
   return (

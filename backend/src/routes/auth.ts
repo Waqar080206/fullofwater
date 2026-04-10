@@ -9,7 +9,7 @@ const router = Router();
 // Returns a nonce message the wallet must sign
 router.get('/nonce/:address', async (req: Request, res: Response) => {
   const address = req.params.address.toLowerCase();
-  const nonce = `Sign this message to login to OffGrid Fantasy.\nWallet: ${address}\nNonce: ${Date.now()}`;
+  const nonce = `Sign this message to login to LapLogic Fantasy.\nWallet: ${address}\nNonce: ${Date.now()}`;
   res.json({ nonce });
 });
 

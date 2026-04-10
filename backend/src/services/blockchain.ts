@@ -5,7 +5,7 @@ const RANK_REGISTRY_ABI = [
   'function setRank(address user, uint256 rank, string calldata rankName) external',
 ];
 
-const OFFGRID_CORE_ABI = [
+const LAPLOGIC_CORE_ABI = [
   'function distributeReward(address user, uint256 amount) external',
 ];
 
@@ -40,8 +40,8 @@ export async function distributeRewardOnChain(
   // Convert GameCoins to token units (18 decimals)
   const wallet = getAdminWallet();
   const contract = new ethers.Contract(
-    process.env.OFFGRID_CORE_ADDRESS!,
-    OFFGRID_CORE_ABI,
+    process.env.LAPLOGIC_CORE_ADDRESS!,
+    LAPLOGIC_CORE_ABI,
     wallet
   );
   const amount = ethers.parseUnits(amountInGameCoins.toString(), 18);

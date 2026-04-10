@@ -1,10 +1,10 @@
-# CONTRACTS.md — OffGrid F1 Fantasy Smart Contracts
+# CONTRACTS.md — LapLogic F1 Fantasy Smart Contracts
 
 ## Overview
 
 Three Solidity contracts deployed on **Polygon Amoy testnet** (or Polygon mainnet).
 - `GameCoin.sol` — ERC20 token for in-game currency
-- `OffGridCore.sol` — Entry fees, reward pools, prize distribution
+- `LapLogicCore.sol` — Entry fees, reward pools, prize distribution
 - `RankRegistry.sol` — On-chain seasonal rank storage
 
 Toolchain: **Hardhat + TypeScript + ethers.js v6**
@@ -27,14 +27,14 @@ Toolchain: **Hardhat + TypeScript + ethers.js v6**
 contracts/
 ├── contracts/
 │   ├── GameCoin.sol
-│   ├── OffGridCore.sol
+│   ├── LapLogicCore.sol
 │   └── RankRegistry.sol
 ├── scripts/
 │   ├── deploy.ts
 │   └── verify.ts
 ├── test/
 │   ├── GameCoin.test.ts
-│   ├── OffGridCore.test.ts
+│   ├── LapLogicCore.test.ts
 │   └── RankRegistry.test.ts
 ├── hardhat.config.ts
 ├── package.json
@@ -105,7 +105,7 @@ export default config;
 
 ## Contract 1: `GameCoin.sol`
 
-ERC20 token. Minted when users purchase with ETH. Burned when redeemed back to ETH. Only `OffGridCore` and `owner` can mint/burn.
+ERC20 token. Minted when users purchase with ETH. Burned when redeemed back to ETH. Only `LapLogicCore` and `owner` can mint/burn.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -115,8 +115,8 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract GameCoin is ERC20, Ownable {
-    // Address of OffGridCore contract — allowed to mint/burn
-    address public offGridCore;
+    // Address of LapLogicCore contract — allowed to mint/burn
+    address public lapLogicCore;
 
     // ETH to GameCoin exchange rate: 1 ETH = X GameCoins
     // Set by owner (admin), updated manually
@@ -132,13 +132,13 @@ contract GameCoin is ERC20, Ownable {
     }
 
     modifier onlyCoreOrOwner() {
-        require(msg.sender == offGridCore || msg.sender == owner(), "Not authorized");
+        require(msg.sender == lapLogicCore || msg.sender == owner(), "Not authorized");
         _;
     }
 
-    // Owner sets the OffGridCore contract address after deployment
-    function setOffGridCore(address _core) external onlyOwner {
-        offGridCore = _core;
+    // Owner sets the LapLogicCore contract address after deployment
+    function setLapLogicCore(address _core) external onlyOwner {
+        lapLogicCore = _core;
         emit CoreUpdated(_core);
     }
 
@@ -174,7 +174,7 @@ contract GameCoin is ERC20, Ownable {
         emit Redeemed(msg.sender, amountCoins, ethToReturn);
     }
 
-    // OffGridCore can mint rewards (prediction wins)
+    // LapLogicCore can mint rewards (prediction wins)
     function mintReward(address to, uint256 amountCoins) external onlyCoreOrOwner {
         _mint(to, amountCoins * 10 ** decimals());
     }
@@ -200,7 +200,7 @@ contract GameCoin is ERC20, Ownable {
 
 ---
 
-## Contract 2: `OffGridCore.sol`
+## Contract 2: `LapLogicCore.sol`
 
 Handles paid contest entry fees, prize pool management, and reward distribution.
 
@@ -212,7 +212,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./GameCoin.sol";
 
-contract OffGridCore is Ownable, ReentrancyGuard {
+contract LapLogicCore is Ownable, ReentrancyGuard {
     GameCoin public gameCoin;
 
     // Entry fee in GameCoin tokens (whole coins)
@@ -512,17 +512,17 @@ async function main() {
   await gameCoin.waitForDeployment();
   console.log('GameCoin deployed:', await gameCoin.getAddress());
 
-  // 2. Deploy OffGridCore
+  // 2. Deploy LapLogicCore
   // entryFeeCoins: 3000 GameCoins (~₹50 at assumed rate)
   // platformFeePercent: 10%
-  const OffGridCore = await ethers.getContractFactory('OffGridCore');
-  const offGridCore = await OffGridCore.deploy(
+  const LapLogicCore = await ethers.getContractFactory('LapLogicCore');
+  const lapLogicCore = await LapLogicCore.deploy(
     await gameCoin.getAddress(),
     3000,
     10
   );
-  await offGridCore.waitForDeployment();
-  console.log('OffGridCore deployed:', await offGridCore.getAddress());
+  await lapLogicCore.waitForDeployment();
+  console.log('LapLogicCore deployed:', await lapLogicCore.getAddress());
 
   // 3. Deploy RankRegistry
   const RankRegistry = await ethers.getContractFactory('RankRegistry');
@@ -531,10 +531,10 @@ async function main() {
   console.log('RankRegistry deployed:', await rankRegistry.getAddress());
 
   // 4. Link contracts
-  // Tell GameCoin about OffGridCore
-  const tx1 = await gameCoin.setOffGridCore(await offGridCore.getAddress());
+  // Tell GameCoin about LapLogicCore
+  const tx1 = await gameCoin.setLapLogicCore(await lapLogicCore.getAddress());
   await tx1.wait();
-  console.log('GameCoin linked to OffGridCore');
+  console.log('GameCoin linked to LapLogicCore');
 
   // Set backend writer on RankRegistry (use your backend server's wallet address)
   // Replace with actual backend wallet address
@@ -543,15 +543,15 @@ async function main() {
   await tx2.wait();
   console.log('RankRegistry backend writer set');
 
-  // 5. Fund OffGridCore with initial GameCoins for reward distribution
-  // Mint 10M GameCoins to OffGridCore for initial pool
-  const tx3 = await gameCoin.mint(await offGridCore.getAddress(), ethers.parseUnits('10000000', 18));
+  // 5. Fund LapLogicCore with initial GameCoins for reward distribution
+  // Mint 10M GameCoins to LapLogicCore for initial pool
+  const tx3 = await gameCoin.mint(await lapLogicCore.getAddress(), ethers.parseUnits('10000000', 18));
   await tx3.wait();
-  console.log('OffGridCore funded with 10M GameCoins');
+  console.log('LapLogicCore funded with 10M GameCoins');
 
   console.log('\n=== DEPLOYMENT COMPLETE ===');
   console.log('GAMECOIN_ADDRESS=', await gameCoin.getAddress());
-  console.log('OFFGRID_CORE_ADDRESS=', await offGridCore.getAddress());
+  console.log('LAPLOGIC_CORE_ADDRESS=', await lapLogicCore.getAddress());
   console.log('RANK_REGISTRY_ADDRESS=', await rankRegistry.getAddress());
   console.log('\nCopy these to your backend .env file');
 }
@@ -568,7 +568,7 @@ import { run } from 'hardhat';
 
 async function main() {
   const GAMECOIN = process.env.GAMECOIN_ADDRESS!;
-  const OFFGRID_CORE = process.env.OFFGRID_CORE_ADDRESS!;
+  const LAPLOGIC_CORE = process.env.LAPLOGIC_CORE_ADDRESS!;
   const RANK_REGISTRY = process.env.RANK_REGISTRY_ADDRESS!;
 
   await run('verify:verify', {
@@ -577,7 +577,7 @@ async function main() {
   });
 
   await run('verify:verify', {
-    address: OFFGRID_CORE,
+    address: LAPLOGIC_CORE,
     constructorArguments: [GAMECOIN, 3000, 10],
   });
 
@@ -598,7 +598,7 @@ main().catch(console.error);
 
 ```json
 {
-  "name": "offgrid-contracts",
+  "name": "laplogic-contracts",
   "version": "1.0.0",
   "scripts": {
     "compile": "hardhat compile",
@@ -625,7 +625,7 @@ main().catch(console.error);
 
 ## Security Checklist
 
-- **ReentrancyGuard** on all ETH/token transfer functions in OffGridCore ✅
+- **ReentrancyGuard** on all ETH/token transfer functions in LapLogicCore ✅
 - **Ownable** with explicit transfer — no accidental ownership loss ✅
 - **onlyWriter** modifier on RankRegistry — backend wallet separate from owner ✅
 - All amounts validated before transfer — no underflow possible (Solidity 0.8+ built-in) ✅
@@ -647,9 +647,9 @@ const tx = await gameCoin.purchase({ value: ethers.parseEther('0.01') });
 await tx.wait();
 
 // Enter paid race (must approve first)
-const approveTx = await gameCoin.approve(OFFGRID_CORE_ADDRESS, ethers.parseUnits('3000', 18));
+const approveTx = await gameCoin.approve(LAPLOGIC_CORE_ADDRESS, ethers.parseUnits('3000', 18));
 await approveTx.wait();
-const coreTx = await offGridCore.enterRace(raceIdBytes32);
+const coreTx = await lapLogicCore.enterRace(raceIdBytes32);
 await coreTx.wait();
 ```
 

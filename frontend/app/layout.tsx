@@ -5,7 +5,7 @@ import { AuthProvider } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
 
 export const metadata: Metadata = {
-  title: 'OffGrid — F1 Fantasy on Chain',
+  title: 'LapLogic — F1 Fantasy on Chain',
   description: 'Build your F1 fantasy team, predict race outcomes, earn on-chain.',
 };
 
