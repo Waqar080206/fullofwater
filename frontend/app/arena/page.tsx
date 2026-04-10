@@ -125,7 +125,7 @@ export default function ArenaPage() {
           
           {/* Option 1: Free Practice */}
           <button 
-            onClick={() => router.push('/predict/free')}
+            onClick={() => router.push('/team?mode=free')}
             className="flex-1 rounded-3xl border border-white/5 bg-gradient-to-br from-[#121212] to-[#0a0a0a] p-8 group hover:border-emerald-500/30 hover:bg-[#151515] transition-all duration-500 relative overflow-hidden flex flex-col justify-center items-start text-left focus:outline-none shadow-xl"
           >
             <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-emerald-500/5 to-transparent pointer-events-none transition-opacity duration-700 opacity-0 group-hover:opacity-100"></div>
@@ -153,7 +153,7 @@ export default function ArenaPage() {
 
           {/* Option 2: Pro Grid (Paid) */}
           <button 
-            onClick={() => router.push('/predict/pro')}
+            onClick={() => router.push('/team?mode=pro')}
             className="flex-1 rounded-3xl border border-white/5 bg-gradient-to-br from-[#151212] to-[#080505] p-8 group hover:border-[#e8002d]/40 hover:bg-[#1a1111] transition-all duration-500 relative overflow-hidden flex flex-col justify-center items-start text-left shadow-2xl focus:outline-none"
           >
             <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-[#e8002d]/10 to-transparent pointer-events-none transition-opacity duration-700 opacity-50 group-hover:opacity-100"></div>
