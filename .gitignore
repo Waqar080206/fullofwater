@@ -36,3 +36,10 @@ Thumbs.db
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+
+# Large Media
+Video.mp4
+*.mp4
+*.webm
+frontend/public/Video.mp4
+

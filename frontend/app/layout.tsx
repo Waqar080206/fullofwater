@@ -5,8 +5,11 @@ import { AuthProvider } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
 
 export const metadata: Metadata = {
-  title: 'LapLogic — F1 Fantasy on Chain',
+  title: 'LapLogic',
   description: 'Build your F1 fantasy team, predict race outcomes, earn on-chain.',
+  icons: {
+    icon: '/logo.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

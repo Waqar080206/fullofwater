@@ -1,8 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'Formula1-Black';
+  src: url('/fonts/Formula1-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Formula1-Regular';
+  src: url('/fonts/Formula1-Regular-1.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
 
 :root {
   --bg-primary: #0a0a0a;        /* Near black */
@@ -26,7 +38,9 @@
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  font-family: 'Formula1-Regular', sans-serif;
 }
 
-.font-display { font-family: 'Orbitron', monospace; }
-.font-body    { font-family: 'Inter', sans-serif; }
+.font-display { font-family: 'Formula1-Regular', sans-serif; }
+.font-body    { font-family: 'Formula1-Regular', sans-serif; }
+.font-f1-black { font-family: 'Formula1-Black', sans-serif; }
