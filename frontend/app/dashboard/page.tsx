@@ -1,205 +1,265 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
-import { raceAPI } from '../../lib/api';
-import { User as UserIcon, Trophy, Coins, Flag, MessageSquare, Zap, Bot } from 'lucide-react';
+
+// Hardcoded Miami GP data crafted to emulate an API response payload
+const upcomingRace = {
+  event: "Formula 1 Crypto.com Miami Grand Prix 2026",
+  date: "Sunday, May 3, 2026",
+  location: {
+    venue: "Miami International Autodrome",
+    campus: "Hard Rock Stadium",
+    city: "Miami Gardens, FL",
+    timezone: "EDT (UTC-4)"
+  },
+  race_details: {
+    round: 4,
+    start_time: "16:00 Local / 01:30 IST",
+    laps: 57,
+    track_length: "5.41 km",
+    total_distance: "308.326 km",
+    corners: 19,
+    drs_zones: 3
+  },
+  fan_experience: {
+    highlights: [
+      "First US race of the 2026 season",
+      "Features new 2026 technical regulations",
+      "Campus pass access to Team Village and Marina",
+      "Live entertainment featuring Farruko and Zedd"
+    ]
+  }
+};
 
 export default function DashboardPage() {
-  const [races, setRaces] = useState<any[]>([]);
+  const [isSpinning, setIsSpinning] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    raceAPI.getAll().catch(() => []).then(setRaces);
-  }, []);
+  const handleJoinArena = () => {
+    setIsSpinning(true);
+    setTimeout(() => {
+      router.push('/arena');
+    }, 1200); // 1.2s delay to show off the high-speed tire spin animation
+  };
 
   return (
-    <div className="relative h-[calc(100vh-64px)] w-full bg-[#0a0a0a] p-4 lg:p-8 overflow-hidden">
+    <div className="relative min-h-[calc(100vh-80px)] p-4 max-w-[1800px] mx-auto overflow-hidden text-gray-100">
       
-      {/* Background ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#e8002d] rounded-full opacity-[0.03] blur-[100px] pointer-events-none" />
-
-      {/* Main 4-Quadrant Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 grid-rows-2 gap-4 lg:gap-8 h-full relative z-10 w-full max-w-[1600px] mx-auto">
+      {/* 2x2 Tight Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-2 gap-2 h-full min-h-[88vh] relative">
         
-        {/* TOP LEFT: USER PROFILE */}
-        <div className="border border-[#2a2a2a] bg-[#111111]/80 backdrop-blur-md p-6 flex flex-col text-left group hover:border-[#e8002d]/50 transition-colors overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#e8002d]/5 rounded-bl-full pointer-events-none" />
-          <div className="flex items-center gap-3 mb-6">
-            <UserIcon className="text-[#e8002d] w-6 h-6" />
-            <h2 className="font-display font-bold text-xl tracking-widest text-white">PILOT PROFILE</h2>
-          </div>
-          
+        {/* Top-Left: User Profile */}
+        <div className="border border-[#2a2a2a] bg-black/80 backdrop-blur-md rounded-tl-2xl rounded-tr-sm rounded-br-sm rounded-bl-sm p-8 flex flex-col justify-center relative overflow-hidden group hover:border-[#4a4a4a] transition-all">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#e8002d] opacity-[0.05] blur-3xl rounded-full"></div>
+          <h3 className="font-display font-bold text-xl text-[#a0a0a0] mb-6 tracking-widest uppercase">Driver Profile</h3>
           {user ? (
-            <div className="flex-1 flex flex-col justify-center space-y-6">
+            <div className="space-y-6 flex-grow flex flex-col justify-center">
               <div>
-                <p className="text-[#a0a0a0] text-sm font-display tracking-widest mb-1">CALLSIGN</p>
-                <p className="font-f1-black text-4xl uppercase text-white">{user.username}</p>
+                <p className="text-[#707070] text-sm uppercase tracking-wider mb-1">Pilot</p>
+                <p className="font-display font-bold text-4xl">{user.username}</p>
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="border-l-2 border-[#e8002d] pl-4">
-                  <p className="text-[#a0a0a0] text-xs font-display tracking-wider mb-1">RANK</p>
-                  <p className="font-bold text-lg text-white flex items-center justify-start gap-2">
-                    <Trophy className="w-4 h-4 text-[#ffd700]" /> {user.rankName}
-                  </p>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-[#111111] p-4 border border-[#222]">
+                  <p className="text-[#707070] text-xs uppercase tracking-wider mb-1">Rank</p>
+                  <p className="font-display font-bold text-[#e8002d] text-2xl uppercase">{user.rankName}</p>
                 </div>
-                <div className="border-l-2 border-[#e8002d] pl-4">
-                  <p className="text-[#a0a0a0] text-xs font-display tracking-wider mb-1">POINTS</p>
-                  <p className="font-bold text-lg text-white">{user.totalPoints}</p>
+                <div className="bg-[#111111] p-4 border border-[#222]">
+                  <p className="text-[#707070] text-xs uppercase tracking-wider mb-1">Points</p>
+                  <p className="font-display font-bold text-2xl">{user.totalPoints}</p>
                 </div>
-                <div className="border-l-2 border-[#e8002d] pl-4">
-                  <p className="text-[#a0a0a0] text-xs font-display tracking-wider mb-1">BUDGET</p>
-                  <p className="font-bold text-lg text-[#00d4aa] flex items-center justify-start gap-2">
-                    <Coins className="w-4 h-4" /> {(user.gameCoins / 1_000_000).toFixed(1)}M
-                  </p>
-                </div>
+              </div>
+              <div className="bg-[#111111] p-4 border border-[#222] flex justify-between items-center">
+                <p className="text-[#707070] text-sm uppercase tracking-wider">GameCoins</p>
+                <p className="font-display font-bold text-[#ffd700] text-2xl">
+                  {(user.gameCoins / 1_000_000).toFixed(1)}M
+                </p>
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-[#555]">
-              Loading telemetry...
+            <div className="flex-grow flex items-center justify-center">
+              <p className="text-[#707070] animate-pulse">Loading Telemetry...</p>
             </div>
           )}
         </div>
 
-        {/* TOP RIGHT: RACE UPDATES */}
-        <div className="border border-[#2a2a2a] bg-[#111111]/80 backdrop-blur-md p-6 flex flex-col text-left group hover:border-[#e8002d]/50 transition-colors overflow-hidden relative">
-          <div className="flex items-center gap-3 mb-6 pb-2 border-b border-[#2a2a2a]">
-            <Flag className="text-[#e8002d] w-6 h-6" />
-            <h2 className="font-display font-bold text-xl tracking-widest text-white">RACE CONTROL</h2>
+        {/* Top-Right: Premium Race Updates */}
+        <div className="border border-[#2a2a2a] bg-black/80 backdrop-blur-md rounded-tr-2xl rounded-tl-sm rounded-br-sm rounded-bl-sm p-8 flex flex-col relative overflow-hidden group hover:border-[#4a4a4a] transition-all">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 opacity-[0.03] blur-3xl rounded-full pointer-events-none"></div>
+          
+          <div className="flex justify-between items-end mb-6 border-b border-[#222] pb-4">
+            <h3 className="font-display font-bold text-xl text-[#a0a0a0] tracking-widest uppercase flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+              Next Grand Prix
+            </h3>
+            <span className="text-[#e8002d] font-bold text-sm tracking-widest uppercase">Round {upcomingRace.race_details.round}</span>
           </div>
-          <div className="flex-1 overflow-y-auto pr-2 space-y-4 scrollbar-thin">
-            {races && races.length > 0 ? (
-              races.map(race => (
-                <div key={race._id} className="bg-[#1a1a1a] p-4 border-l-4 border-[#e8002d] hover:bg-[#222] transition cursor-pointer" onClick={() => router.push(`/predict/${race._id}`)}>
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-lg text-white uppercase">{race.name}</h3>
-                    <span className="text-xs text-[#a0a0a0] font-display">{new Date(race.date).toLocaleDateString()}</span>
-                  </div>
-                  <p className="text-sm text-[#a0a0a0] uppercase">{race.circuit}</p>
-                </div>
-              ))
-            ) : (
-              // Mock upcoming races for visual premium feel when DB is empty
-              <>
-                <div className="bg-[#1a1a1a] p-4 border-l-4 border-[#e8002d] hover:bg-[#222] transition cursor-pointer relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-16 h-full bg-gradient-to-l from-[#e8002d]/10 to-transparent pointer-events-none" />
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-bold text-lg text-white font-f1-black tracking-wide">BAHRAIN GRAND PRIX</h3>
-                    <span className="text-[10px] bg-[#e8002d] text-white px-2 py-0.5 font-display animate-pulse uppercase">NEXT RACE</span>
-                  </div>
-                  <p className="text-sm text-[#a0a0a0] font-display">Bahrain International Circuit</p>
-                </div>
-                <div className="bg-[#1a1a1a] p-4 border-l-4 border-[#2a2a2a] opacity-50 hover:opacity-100 transition cursor-not-allowed">
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-bold text-lg text-white font-f1-black tracking-wide">SAUDI ARABIAN GRAND PRIX</h3>
-                    <span className="text-[10px] border border-[#2a2a2a] text-[#a0a0a0] px-2 py-0.5 font-display uppercase">MAR 18</span>
-                  </div>
-                  <p className="text-sm text-[#a0a0a0] font-display">Jeddah Corniche Circuit</p>
-                </div>
-                 <div className="bg-[#1a1a1a] p-4 border-l-4 border-[#2a2a2a] opacity-50 hover:opacity-100 transition cursor-not-allowed">
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-bold text-lg text-white font-f1-black tracking-wide">AUSTRALIAN GRAND PRIX</h3>
-                    <span className="text-[10px] border border-[#2a2a2a] text-[#a0a0a0] px-2 py-0.5 font-display uppercase">MAR 24</span>
-                  </div>
-                  <p className="text-sm text-[#a0a0a0] font-display">Albert Park Circuit</p>
-                </div>
-              </>
-            )}
+
+          <div className="flex-grow overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-[#2a2a2a] scrollbar-track-transparent">
+            {/* Main Event Card */}
+            <div className="relative p-5 border border-[#333] bg-gradient-to-br from-[#111] to-[#050505] overflow-hidden group-hover:border-[#555] transition-colors">
+              <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-blue-900/10 to-transparent pointer-events-none"></div>
+              <h4 className="font-display font-bold text-2xl text-white mb-2 uppercase tracking-wide leading-tight shadow-sm">
+                {upcomingRace.event}
+              </h4>
+              <p className="text-[#00e5ff] font-medium text-xs tracking-widest uppercase mb-4">
+                {upcomingRace.date} • {upcomingRace.race_details.start_time}
+              </p>
+              
+              <div className="flex items-start gap-4">
+                 <div className="w-10 h-10 rounded border border-[#444] flex items-center justify-center bg-[#1a1a1a] shrink-0 text-gray-400 shadow-inner">
+                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                 </div>
+                 <div>
+                   <p className="text-sm font-bold text-gray-200">{upcomingRace.location.venue}</p>
+                   <p className="text-xs text-gray-500 mt-1">{upcomingRace.location.city} • {upcomingRace.location.campus}</p>
+                 </div>
+              </div>
+            </div>
+
+            {/* Telemetry Stats */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-[#0a0a0a] border border-[#222] p-3 text-center flex flex-col justify-center shadow-inner">
+                <p className="text-[9px] text-[#707070] uppercase tracking-widest mb-1">Laps</p>
+                <p className="font-display font-bold text-xl text-white">{upcomingRace.race_details.laps}</p>
+              </div>
+              <div className="bg-[#0a0a0a] border border-[#222] p-3 text-center flex flex-col justify-center shadow-inner">
+                <p className="text-[9px] text-[#707070] uppercase tracking-widest mb-1">Circuit</p>
+                <p className="font-display font-bold tracking-wide text-md text-white">{upcomingRace.race_details.track_length}</p>
+              </div>
+              <div className="bg-[#0a0a0a] border border-[#222] p-3 text-center flex flex-col justify-center shadow-inner">
+                <p className="text-[9px] text-[#707070] uppercase tracking-widest mb-1">DRS</p>
+                <p className="font-display font-bold text-xl text-white">{upcomingRace.race_details.drs_zones} Zones</p>
+              </div>
+            </div>
+
+            {/* Highlights */}
+            <div className="p-4 border border-[#222] bg-[#0a0a0a]">
+              <p className="text-[10px] text-[#e8002d] uppercase tracking-widest font-bold mb-3">Fan Experience</p>
+              <ul className="space-y-2">
+                {upcomingRace.fan_experience.highlights.map((hl, i) => (
+                  <li key={i} className="text-xs text-gray-400 flex items-start gap-2 leading-relaxed">
+                    <span className="text-[#e8002d] mt-[3px] text-[8px]">▶</span>
+                    <span>{hl}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
-        {/* BOTTOM LEFT: COMMUNITY CHAT */}
-        <div className="border border-[#2a2a2a] bg-[#111111]/80 backdrop-blur-md p-6 flex flex-col text-left group hover:border-[#e8002d]/50 transition-colors overflow-hidden relative">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#2a2a2a]">
-            <MessageSquare className="text-[#00d4aa] w-6 h-6" />
-            <h2 className="font-display font-bold text-xl tracking-widest text-white">THE PADDOCK</h2>
-            <div className="ml-auto flex items-center gap-2">
-              <span className="text-[10px] text-[#a0a0a0] font-display">1.2K ONLINE</span>
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00d4aa] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00d4aa]"></span>
-              </span>
+        {/* Bottom-Left: Community Chat (Discord-like) */}
+        <div className="border border-[#2a2a2a] bg-[#0a0a0a]/90 backdrop-blur-md rounded-bl-2xl rounded-tl-sm rounded-tr-sm rounded-br-sm p-6 flex flex-col relative overflow-hidden group hover:border-[#4a4a4a] transition-all">
+          <div className="flex justify-between items-center mb-4 border-b border-[#222] pb-4">
+            <h3 className="font-display font-bold text-lg text-[#a0a0a0] uppercase flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              Paddock Club
+            </h3>
+            <span className="text-xs text-[#707070]">142 Online</span>
+          </div>
+          <div className="flex-grow overflow-y-auto mb-4 space-y-4 pr-2 scrollbar-thin scrollbar-thumb-[#2a2a2a] scrollbar-track-transparent">
+            {/* Mock Chat Messages */}
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center font-bold text-xs border border-[#333]">V</div>
+              <div>
+                <p className="text-sm font-bold text-[#ccc]">VerstappenFan <span className="text-[10px] text-[#555] font-normal ml-2">10:42 AM</span></p>
+                <p className="text-sm text-[#999]">Did anyone check the new aero upgrades for Ferrari?</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center font-bold text-xs border border-[#333] text-[#e8002d]">S</div>
+              <div>
+                <p className="text-sm font-bold text-[#e8002d]">ScuderiaTifosi <span className="text-[10px] text-[#555] font-normal ml-2">10:43 AM</span></p>
+                <p className="text-sm text-[#999]">Yeah, looking solid for Q3 today.</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center font-bold text-xs border border-[#333]">L</div>
+              <div>
+                <p className="text-sm font-bold text-[#ccc]">Lewis4Life <span className="text-[10px] text-[#555] font-normal ml-2">10:45 AM</span></p>
+                <p className="text-sm text-[#999]">Wait until the race pace settles.</p>
+              </div>
             </div>
           </div>
-          
-          <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
-            <div className="flex flex-col gap-1 w-4/5">
-              <span className="text-[#e8002d] font-body font-bold text-xs uppercase">VortexRacer_99</span>
-              <p className="text-sm text-[#d0d0d0] bg-[#1a1a1a] border border-[#2a2a2a] p-3 rounded-r-lg rounded-bl-lg">Verstappen is a lock for this weekend, anyone betting against?</p>
-            </div>
-            <div className="flex flex-col gap-1 w-4/5">
-              <span className="text-[#00d4aa] font-body font-bold text-xs uppercase">AeroDynamics</span>
-              <p className="text-sm text-[#d0d0d0] bg-[#1a1a1a] border border-[#2a2a2a] p-3 rounded-r-lg rounded-bl-lg">Budget cap is tight. Had to drop Perez for a midfield pick.</p>
-            </div>
-            <div className="flex flex-col gap-1 items-end w-4/5 ml-auto">
-              <span className="text-[#a0a0a0] font-body font-bold text-xs uppercase">You</span>
-              <p className="text-sm text-white bg-[#e8002d]/20 border border-[#e8002d]/30 p-3 rounded-l-lg rounded-br-lg">Watch out for Piastri, heavy upgrades coming.</p>
-            </div>
-          </div>
-          
-          <div className="relative mt-auto">
+          <div className="mt-auto">
             <input 
               type="text" 
-              placeholder="Send message to Paddock..." 
-              className="w-full bg-[#1a1a1a] border border-[#2a2a2a] p-3 pr-10 text-sm text-white focus:outline-none focus:border-[#e8002d] transition-colors rounded-none placeholder:font-display placeholder:text-xs"
+              placeholder="Message #paddock-club..." 
+              className="w-full bg-[#111] border border-[#222] rounded py-3 px-4 text-sm text-[#ccc] focus:outline-none focus:border-[#e8002d] transition-colors"
             />
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 text-[#a0a0a0] hover:text-[#e8002d] transition-colors p-2">
-              <Zap className="w-4 h-4" />
+          </div>
+        </div>
+
+        {/* Bottom-Right: AI Chatbot */}
+        <div className="border border-[#2a2a2a] bg-[#0a0a0a]/90 backdrop-blur-md rounded-br-2xl rounded-tr-sm rounded-tl-sm rounded-bl-sm p-6 flex flex-col relative overflow-hidden group hover:border-[#4a4a4a] transition-all">
+          <div className="absolute bottom-0 right-0 w-32 h-32 bg-purple-600 opacity-[0.05] blur-3xl rounded-full"></div>
+          <div className="flex justify-between items-center mb-4 border-b border-[#222] pb-4">
+            <h3 className="font-display font-bold text-lg text-[#a0a0a0] uppercase flex items-center gap-2">
+              <span className="text-purple-500">❖</span> Race Engineer AI
+            </h3>
+            <span className="text-xs text-purple-500 border border-purple-500/30 px-2 py-1 bg-purple-500/10">Active</span>
+          </div>
+          <div className="flex-grow overflow-y-auto mb-4 space-y-4 pr-2 scrollbar-thin scrollbar-thumb-[#2a2a2a] scrollbar-track-transparent">
+             <div className="bg-[#111] border border-[#222] p-4 rounded-xl rounded-tl-sm w-[85%]">
+              <p className="text-sm text-[#ccc]">Welcome to the pit wall. I've analyzed the historical data for the upcoming Grand Prix. Weather models suggest a 40% chance of rain. How can I assist your prediction strategy today?</p>
+             </div>
+          </div>
+          <div className="mt-auto relative">
+            <input 
+              type="text" 
+              placeholder="Ask for strategy inputs..." 
+              className="w-full bg-[#111] border border-[#222] rounded-full py-3 px-4 pr-12 text-sm text-[#ccc] focus:outline-none focus:border-purple-500 transition-colors"
+            />
+            <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-purple-600 text-white rounded-full hover:bg-purple-500 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
             </button>
           </div>
         </div>
 
-        {/* BOTTOM RIGHT: AI CHATBOT */}
-        <div className="border border-[#2a2a2a] bg-[#111111]/80 backdrop-blur-md p-6 flex flex-col text-left group hover:border-[#e8002d]/50 transition-colors overflow-hidden relative">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#2a2a2a]">
-            <Bot className="text-[#e8002d] w-6 h-6" />
-            <h2 className="font-display font-bold text-xl tracking-widest text-white">RACE ENGINEER AI</h2>
-            <div className="ml-auto flex items-center justify-center bg-[#e8002d]/10 border border-[#e8002d]/30 px-2 py-1">
-              <span className="text-[10px] text-[#e8002d] font-display uppercase tracking-widest blink">ONLINE</span>
+        {/* Absolute Center: F1 Pirelli Tire JOIN ARENA Button */}
+        <div className="hidden lg:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 items-center justify-center p-3 bg-[#050505] rounded-full border border-[#222] pointer-events-auto shadow-[0_0_50px_rgba(0,0,0,0.8)]">
+          <button 
+            onClick={handleJoinArena}
+            className={`relative w-36 h-36 rounded-full flex flex-col items-center justify-center text-white font-display font-bold uppercase tracking-widest transition-all duration-700 ease-in-out group overflow-hidden ${
+              isSpinning ? 'scale-90' : 'scale-100 hover:scale-105'
+            }`}
+          >
+            {/* The Tire Base (Rubber) */}
+            <div className={`absolute inset-0 w-full h-full rounded-full bg-[#111] shadow-[inset_0_0_20px_#000,0_0_15px_rgba(0,0,0,0.9)] border-[4px] border-[#0a0a0a] transition-all duration-300 overflow-hidden ${isSpinning ? 'animate-[spin_0.15s_linear_infinite]' : 'group-hover:animate-[spin_3s_linear_infinite]'}`}>
+              
+              {/* Pirelli Red Sidewall Stripe (Soft Compound) */}
+              <div className="absolute inset-2 rounded-full border-4 border-[#e8002d] border-dashed opacity-80 border-spacing-4 mix-blend-screen shadow-[0_0_10px_rgba(232,0,45,0.7)]"></div>
+              <div className="absolute inset-[10px] rounded-full border-2 border-[#e8002d] opacity-70"></div>
+              
+              {/* Inner Metallic Wheel Rim */}
+              <div className="absolute inset-[24px] rounded-full bg-gradient-to-br from-[#222] to-[#0a0a0a] shadow-[inset_0_0_25px_#000] border-2 border-[#1a1a1a] flex items-center justify-center">
+                {/* 3-Spoke Design */}
+                {[0, 60, 120].map((deg) => (
+                  <div key={deg} className="absolute w-[110%] h-[6px] bg-gradient-to-r from-[#111] via-[#333] to-[#111] shadow-black shadow-sm" style={{ transform: `rotate(${deg}deg)` }}></div>
+                ))}
+                
+                {/* Center Titanium Nut locking the wheel */}
+                <div className="absolute w-8 h-8 bg-gradient-to-br from-[#333] to-black rounded-full border-2 border-[#444] z-10 shadow-[0_0_15px_rgba(0,0,0,1)] flex items-center justify-center">
+                   <div className="w-3 h-3 bg-[#e8002d] rounded-full shadow-[0_0_10px_#e8002d]"></div>
+                </div>
+              </div>
             </div>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
-             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded bg-[#e8002d]/20 border border-[#e8002d]/50 flex items-center justify-center shrink-0">
-                <Bot className="w-4 h-4 text-[#e8002d]" />
-              </div>
-              <div className="bg-[#1a1a1a] p-4 border border-[#2a2a2a] rounded-bl-none text-sm text-[#d0d0d0] leading-relaxed">
-                Welcome back{user ? `, ${user.username}` : ''}. Weather forecast for Bahrain shows a 0% chance of rain. Tire deg will be the primary factor. Need strategy advice?
-              </div>
-             </div>
-          </div>
 
-          <div className="relative mt-auto">
-            <input 
-              type="text" 
-              placeholder="Ask for stats, weather, or strategy..." 
-              className="w-full bg-[#1a1a1a] border border-[#2a2a2a] p-3 text-sm text-white focus:outline-none focus:border-[#e8002d] transition-colors rounded-none placeholder:font-display placeholder:text-xs"
-            />
-          </div>
+            {/* Overlay Text Plate (Remains Upright) */}
+            <div className={`absolute z-20 flex flex-col items-center justify-center px-4 py-2 bg-gradient-to-b from-black/80 to-black/60 backdrop-blur-[4px] rounded border border-white/20 shadow-2xl ${isSpinning ? 'opacity-0 scale-50' : 'opacity-100 scale-100'} transition-all duration-300 pointer-events-none`}>
+              <span className="text-[10px] text-[#e8002d] font-bold uppercase tracking-widest leading-none mb-1 shadow-black drop-shadow-md">Join</span>
+              <span className="text-[14px] text-white font-display font-bold uppercase tracking-wider leading-none shadow-black drop-shadow-md">Arena</span>
+            </div>
+            
+            {/* Spinning Motion Blur/Burnout Effect Overlay */}
+            {isSpinning && (
+               <div className="absolute inset-0 rounded-full border-[10px] border-transparent border-t-[#e8002d]/80 opacity-70 animate-[spin_0.08s_linear_infinite] z-30 pointer-events-none mix-blend-screen shadow-[0_0_20px_#e8002d]"></div>
+            )}
+          </button>
         </div>
 
       </div>
-
-      {/* ABSOLUTE CENTER BUTTON */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
-        <button 
-          onClick={() => router.push('https://lap-logic-v1-2-n7ll.vercel.app/')}
-          className="relative group block"
-        >
-          {/* Intense Outer Glow */}
-          <div className="absolute -inset-2 bg-[#e8002d] opacity-50 blur-xl group-hover:opacity-100 group-hover:blur-2xl transition duration-500 rounded-full" />
-          {/* Button core */}
-          <div className="relative flex items-center justify-center w-72 h-20 bg-[#0a0a0a] border-2 border-[#e8002d] overflow-hidden group-active:scale-95 transition-transform">
-            {/* Glossy sweeping effect */}
-            <div className="absolute top-0 bottom-0 left-[-100%] w-[50%] bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:left-[200%] transition-all duration-[1.5s] ease-in-out skew-x-12" />
-            <span className="font-f1-black text-2xl tracking-[0.2em] text-white whitespace-nowrap">JOIN ARENA</span>
-          </div>
-        </button>
-      </div>
-
     </div>
   );
 }
