@@ -50,17 +50,38 @@ Feed `FRONTEND.md` last.
 
 ## Running Locally
 
+**Prerequisites:** You must have the `.env` files set up in each directory as specified in the specs. For local development, it is recommended to run a local Hardhat node instead of deploying to Amoy every time.
+
+Open three separate terminals:
+
+### 1. Smart Contracts
+Start a local blockchain and deploy the contracts:
 ```bash
-# Contracts
-cd contracts && npm install
-npx hardhat run scripts/deploy.ts --network amoy
-
-# Backend
-cd backend && npm install && npm run dev
-
-# Frontend
-cd frontend && npm install && npm run dev
+cd contracts
+npx hardhat node
 ```
+*In a separate terminal window, deploy to the local network:*
+```bash
+cd contracts
+npx hardhat run scripts/deploy.ts --network localhost
+```
+*Copy the deployed addresses to the `backend/.env` and `frontend/.env.local` files.*
+
+### 2. Backend
+Start the Express server:
+```bash
+cd backend
+npm run dev
+```
+*(Runs on http://localhost:5000 by default)*
+
+### 3. Frontend
+Start the Next.js development server:
+```bash
+cd frontend
+npm run dev
+```
+*(Runs on http://localhost:3000 by default)*
 
 ---
 
