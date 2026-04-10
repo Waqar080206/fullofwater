@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 
@@ -32,10 +32,62 @@ const upcomingRace = {
   }
 };
 
-export default function DashboardPage() {
+export default function DashboardPage() 
+{
   const [isSpinning, setIsSpinning] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [isThinking, setIsThinking] = useState(false);
+  const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([
+    {
+      role: 'model',
+      content:
+        "Welcome to the pit wall. I've analyzed the historical data for the upcoming Grand Prix. Weather models suggest a 40% chance of rain. How can I assist your prediction strategy today?",
+    },
+  ]);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+
   const { user } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [messages, isThinking]);
+
+  const handleSendMessage = async () => {
+    if (!chatInput.trim()) return;
+
+    const userMessage = { role: 'user' as const, content: chatInput.trim() };
+    setMessages((prev) => [...prev, userMessage]);
+    setChatInput('');
+    setIsThinking(true);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [...messages, userMessage] }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setMessages((prev) => [...prev, { role: 'model', content: data.reply }]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'model', content: "Sorry, I'm experiencing radio interference on the pit wall right now. Could you repeat?" },
+        ]);
+      }
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'model', content: "Box box. Communication system failure. Try again later." },
+      ]);
+    } finally {
+      setIsThinking(false);
+    }
+  };
 
   const handleJoinArena = () => {
     setIsSpinning(true);
@@ -149,47 +201,98 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Bottom-Left: Community Chat (Discord-like) */}
-        <div className="border border-[#2a2a2a] bg-[#0a0a0a]/90 backdrop-blur-md rounded-bl-2xl rounded-tl-sm rounded-tr-sm rounded-br-sm p-6 flex flex-col relative overflow-hidden group hover:border-[#4a4a4a] transition-all">
-          <div className="flex justify-between items-center mb-4 border-b border-[#222] pb-4">
-            <h3 className="font-display font-bold text-lg text-[#a0a0a0] uppercase flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              Paddock Club
-            </h3>
-            <span className="text-xs text-[#707070]">142 Online</span>
-          </div>
-          <div className="flex-grow overflow-y-auto mb-4 space-y-4 pr-2 scrollbar-thin scrollbar-thumb-[#2a2a2a] scrollbar-track-transparent">
-            {/* Mock Chat Messages */}
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center font-bold text-xs border border-[#333]">V</div>
-              <div>
-                <p className="text-sm font-bold text-[#ccc]">VerstappenFan <span className="text-[10px] text-[#555] font-normal ml-2">10:42 AM</span></p>
-                <p className="text-sm text-[#999]">Did anyone check the new aero upgrades for Ferrari?</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center font-bold text-xs border border-[#333] text-[#e8002d]">S</div>
-              <div>
-                <p className="text-sm font-bold text-[#e8002d]">ScuderiaTifosi <span className="text-[10px] text-[#555] font-normal ml-2">10:43 AM</span></p>
-                <p className="text-sm text-[#999]">Yeah, looking solid for Q3 today.</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center font-bold text-xs border border-[#333]">L</div>
-              <div>
-                <p className="text-sm font-bold text-[#ccc]">Lewis4Life <span className="text-[10px] text-[#555] font-normal ml-2">10:45 AM</span></p>
-                <p className="text-sm text-[#999]">Wait until the race pace settles.</p>
-              </div>
-            </div>
-          </div>
-          <div className="mt-auto">
-            <input 
-              type="text" 
-              placeholder="Message #paddock-club..." 
-              className="w-full bg-[#111] border border-[#222] rounded py-3 px-4 text-sm text-[#ccc] focus:outline-none focus:border-[#e8002d] transition-colors"
-            />
-          </div>
-        </div>
+       {/* Bottom-Left: Join Community */}
+<div className="border border-[#2a2a2a] bg-[#0a0a0a]/90 backdrop-blur-md rounded-bl-2xl rounded-tl-sm rounded-tr-sm rounded-br-sm p-6 flex flex-col relative overflow-hidden group hover:border-[#4a4a4a] transition-all">
+  <div className="absolute top-0 left-0 w-48 h-48 bg-[#5865F2] opacity-[0.04] blur-3xl rounded-full pointer-events-none"></div>
+
+  <div className="flex justify-between items-center mb-6 border-b border-[#222] pb-4">
+    <h3 className="font-display font-bold text-lg text-[#a0a0a0] uppercase flex items-center gap-2">
+      <span className="w-2 h-2 rounded-full bg-[#5865F2] animate-pulse"></span>
+      Live Pit Wall Chat
+    </h3>
+  </div>
+
+  <div className="flex-grow flex flex-col items-center justify-center gap-6 text-center mt-4">
+    <p className="text-sm text-[#707070] max-w-xs">
+      Connect with fellow F1 fans, share predictions, and get race-day updates in real time.
+    </p>
+
+    {/* Perspective wrapper for 3D tilt */}
+    <div style={{ perspective: '600px' }}>
+      <a
+        href="https://discord.gg/sFMnVWYx"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="discord-3d-btn w-56 h-56 flex flex-col items-center justify-center gap-4 text-white font-bold text-sm uppercase tracking-widest rounded-2xl cursor-pointer border border-white/10 relative overflow-hidden transition-all duration-[120ms]"
+        style={{
+          background: 'linear-gradient(145deg, #6975f5, #5865F2 40%, #4752C4 80%, #3a41a8)',
+          boxShadow: `
+            0 1px 0 #8891f7 inset,
+            0 -1px 0 #3a41a8 inset,
+            0 4px 0 #3a41a8,
+            0 8px 0 #2d3299,
+            0 12px 0 #1e2266
+          `,
+          transform: 'translateY(0) rotateX(8deg)',
+        }}
+        onMouseEnter={e => {
+          const el = e.currentTarget;
+          el.style.transform = 'translateY(-6px) rotateX(4deg)';
+          el.style.boxShadow = `
+            0 1px 0 #8891f7 inset,
+            0 -1px 0 #3a41a8 inset,
+            0 6px 0 #3a41a8,
+            0 12px 0 #2d3299,
+            0 18px 0 #1e2266,
+            0 20px 0 #141a55
+          `;
+        }}
+        onMouseLeave={e => {
+          const el = e.currentTarget;
+          el.style.transform = 'translateY(0) rotateX(8deg)';
+          el.style.boxShadow = `
+            0 1px 0 #8891f7 inset,
+            0 -1px 0 #3a41a8 inset,
+            0 4px 0 #3a41a8,
+            0 8px 0 #2d3299,
+            0 12px 0 #1e2266
+          `;
+        }}
+        onMouseDown={e => {
+          const el = e.currentTarget;
+          el.style.transform = 'translateY(8px) rotateX(10deg)';
+          el.style.boxShadow = `
+            0 1px 0 #8891f7 inset,
+            0 -1px 0 #3a41a8 inset,
+            0 2px 0 #3a41a8,
+            0 4px 0 #2d3299
+          `;
+        }}
+        onMouseUp={e => {
+          const el = e.currentTarget;
+          el.style.transform = 'translateY(-6px) rotateX(4deg)';
+        }}
+      >
+        {/* Top-left sheen overlay */}
+        <div className="absolute inset-0 rounded-2xl pointer-events-none"
+          style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 50%)' }}
+        />
+        <svg
+          className="w-16 h-16 transition-all duration-200 group-hover:scale-110"
+          style={{ filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.5)) drop-shadow(0 0 12px rgba(255,255,255,0.2))' }}
+          viewBox="0 -28.5 256 256"
+          fill="currentColor"
+        >
+          <path d="M216.856 16.597A208.502 208.502 0 0 0 164.042 0c-2.275 4.113-4.933 9.645-6.766 14.046-19.692-2.961-39.203-2.961-58.533 0-1.832-4.4-4.55-9.933-6.846-14.046a207.809 207.809 0 0 0-52.855 16.638C5.618 67.147-3.443 116.4 1.087 164.956c22.169 16.555 43.653 26.612 64.775 33.193A161.094 161.094 0 0 0 79.735 175.3a136.413 136.413 0 0 1-21.846-10.632 108.636 108.636 0 0 0 5.356-4.237c42.122 19.702 87.89 19.702 129.51 0a131.66 131.66 0 0 0 5.355 4.237 136.07 136.07 0 0 1-21.886 10.653c4.006 8.02 8.638 15.67 13.873 22.848 21.142-6.58 42.646-16.637 64.815-33.213 5.316-56.288-9.08-105.09-38.056-148.36ZM85.474 135.095c-12.645 0-23.015-11.805-23.015-26.18s10.149-26.2 23.015-26.2c12.867 0 23.236 11.804 23.015 26.2.02 14.375-10.148 26.18-23.015 26.18Zm85.051 0c-12.645 0-23.014-11.805-23.014-26.18s10.148-26.2 23.014-26.2c12.867 0 23.236 11.804 23.015 26.2 0 14.375-10.148 26.18-23.015 26.18Z"/>
+        </svg>
+        <span className="leading-snug" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+          Join Live<br/>Discussion
+        </span>
+      </a>
+    </div>
+  </div>
+</div>
+
 
         {/* Bottom-Right: AI Chatbot */}
         <div className="border border-[#2a2a2a] bg-[#0a0a0a]/90 backdrop-blur-md rounded-br-2xl rounded-tr-sm rounded-tl-sm rounded-bl-sm p-6 flex flex-col relative overflow-hidden group hover:border-[#4a4a4a] transition-all">
@@ -200,19 +303,51 @@ export default function DashboardPage() {
             </h3>
             <span className="text-xs text-purple-500 border border-purple-500/30 px-2 py-1 bg-purple-500/10">Active</span>
           </div>
-          <div className="flex-grow overflow-y-auto mb-4 space-y-4 pr-2 scrollbar-thin scrollbar-thumb-[#2a2a2a] scrollbar-track-transparent">
-             <div className="bg-[#111] border border-[#222] p-4 rounded-xl rounded-tl-sm w-[85%]">
-              <p className="text-sm text-[#ccc]">Welcome to the pit wall. I've analyzed the historical data for the upcoming Grand Prix. Weather models suggest a 40% chance of rain. How can I assist your prediction strategy today?</p>
-             </div>
+          {/* Message List */}
+          <div
+            ref={chatScrollRef}
+            className="flex-grow flex flex-col overflow-y-auto mb-4 space-y-4 pr-2 scrollbar-thin scrollbar-thumb-[#2a2a2a] scrollbar-track-transparent scroll-smooth"
+          >
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                className={`p-4 rounded-xl max-w-[85%] text-sm text-[#ccc] whitespace-pre-wrap ${
+                  msg.role === 'user'
+                    ? 'bg-purple-900/30 border border-purple-500/30 self-end ml-auto rounded-tr-sm'
+                    : 'bg-[#111] border border-[#222] rounded-tl-sm'
+                }`}
+              >
+                <p>{msg.content}</p>
+              </div>
+            ))}
+            {isThinking && (
+              <div className="bg-[#111] border border-[#222] p-4 rounded-xl rounded-tl-sm w-fit text-[#ccc]">
+                <p className="animate-pulse">Thinking...</p>
+              </div>
+            )}
           </div>
-          <div className="mt-auto relative">
-            <input 
-              type="text" 
-              placeholder="Ask for strategy inputs..." 
+
+          {/* Chat Input */}
+          <div className="mt-auto relative shrink-0">
+            <input
+              type="text"
+              placeholder="Ask for strategy inputs..."
               className="w-full bg-[#111] border border-[#222] rounded-full py-3 px-4 pr-12 text-sm text-[#ccc] focus:outline-none focus:border-purple-500 transition-colors"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSendMessage();
+              }}
+              disabled={isThinking}
             />
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-purple-600 text-white rounded-full hover:bg-purple-500 transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            <button
+              onClick={handleSendMessage}
+              disabled={isThinking || !chatInput.trim()}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-purple-600 text-white rounded-full hover:bg-purple-500 transition-colors disabled:opacity-50"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+              </svg>
             </button>
           </div>
         </div>
