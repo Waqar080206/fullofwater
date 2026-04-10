@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: 'LapLogic',
   description: 'Build your F1 fantasy team, predict race outcomes, earn on-chain.',
   icons: {
-    icon: '/logo.png',
+    icon: '/logo (1).png',
   },
 };
 

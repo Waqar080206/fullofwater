@@ -33,7 +33,7 @@ export default function LandingPage() {
         {/* Hero Content */}
         <div className="relative z-10 flex flex-col items-center">
           <Image 
-            src="/logo.png" 
+            src="/logo (1).png" 
             alt="LapLogic Logo" 
             width={320} 
             height={80} 
