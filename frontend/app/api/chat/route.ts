@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
-// Initialize the Gemini API using the key from environment variables
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+// Initialize the Groq API using the key from environment variables
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || '' });
 
 export async function POST(req: NextRequest) {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!process.env.GROQ_API_KEY) {
     return NextResponse.json(
-      { error: 'GEMINI_API_KEY is not configured in the environment.' },
+      { error: 'GROQ_API_KEY is not configured in the environment.' },
       { status: 500 }
     );
   }
@@ -15,37 +15,24 @@ export async function POST(req: NextRequest) {
   try {
     const { messages } = await req.json();
 
-    // Grab the latest user message
-    const latestMessage = messages[messages.length - 1].content;
-
-    // Use the gemini-2.5-flash model
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-
-    // Format the history for the model (Google's format: { role: 'user' | 'model', parts: [{ text: string }] })
-    // We ignore the very first message from the frontend because it's just the hardcoded UI welcome message,
-    // which would cause consecutive 'model' turns and crash the Gemini API.
-    const history = messages.slice(1, -1).map((msg: any) => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }],
+    // Map UI chat roles (user | model) to Groq/OpenAI format (user | assistant)
+    const formattedMessages = messages.map((msg: any) => ({
+      role: msg.role === 'model' ? 'assistant' : 'user',
+      content: msg.content,
     }));
 
-    // Start a chat session with the formatted history
-    const chatSession = model.startChat({
-      history: [
-        {
-          role: 'user',
-          parts: [{ text: "You are a specialized F1 Race Engineer AI. Answer questions about F1, strategies, tire wear, and LapLogic prediction strategies concisely and accurately. Maintain a professional, encouraging pit wall tone." }],
-        },
-        {
-          role: 'model',
-          parts: [{ text: "Welcome to the pit wall. I've analyzed the historical data for the upcoming Grand Prix. Weather models suggest a 40% chance of rain. How can I assist your prediction strategy today?" }],
-        },
-        ...history,
-      ],
+    // Add the system prompt at the beginning of the array to instruct the model's persona
+    formattedMessages.unshift({
+      role: 'system',
+      content: "You are a specialized F1 Race Engineer AI. Answer questions about F1, strategies, tire wear, and LapLogic prediction strategies concisely and accurately. Maintain a professional, encouraging pit wall tone."
     });
 
-    const result = await chatSession.sendMessage(latestMessage);
-    const textResponse = result.response.text();
+    const completion = await groq.chat.completions.create({
+      messages: formattedMessages,
+      model: 'llama-3.1-8b-instant',
+    });
+
+    const textResponse = completion.choices[0]?.message?.content || "No response received";
 
     return NextResponse.json({ reply: textResponse });
   } catch (error: any) {

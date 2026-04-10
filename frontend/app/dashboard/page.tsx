@@ -40,8 +40,7 @@ export default function DashboardPage()
   const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([
     {
       role: 'model',
-      content:
-        "Welcome to the pit wall. I've analyzed the historical data for the upcoming Grand Prix. Weather models suggest a 40% chance of rain. How can I assist your prediction strategy today?",
+      content: "Welcome to LapLogic AI. How can I assist your prediction strategy today?",
     },
   ]);
   const chatScrollRef = useRef<HTMLDivElement>(null);
@@ -297,11 +296,10 @@ export default function DashboardPage()
         {/* Bottom-Right: AI Chatbot */}
         <div className="border border-[#2a2a2a] bg-[#0a0a0a]/90 backdrop-blur-md rounded-br-2xl rounded-tr-sm rounded-tl-sm rounded-bl-sm p-6 flex flex-col relative overflow-hidden group hover:border-[#4a4a4a] transition-all">
           <div className="absolute bottom-0 right-0 w-32 h-32 bg-purple-600 opacity-[0.05] blur-3xl rounded-full"></div>
-          <div className="flex justify-between items-center mb-4 border-b border-[#222] pb-4">
-            <h3 className="font-display font-bold text-lg text-[#a0a0a0] uppercase flex items-center gap-2">
-              <span className="text-purple-500">❖</span> Race Engineer AI
+          <div className="flex justify-center items-center mb-4 border-b border-[#222] pb-4">
+            <h3 className="font-display font-bold text-lg text-[#a0a0a0] uppercase flex items-center justify-center gap-2 w-full">
+              <img src="/laplogicai.png" alt="LapLogic AI" className="h-8 object-contain" />
             </h3>
-            <span className="text-xs text-purple-500 border border-purple-500/30 px-2 py-1 bg-purple-500/10">Active</span>
           </div>
           {/* Message List */}
           <div
