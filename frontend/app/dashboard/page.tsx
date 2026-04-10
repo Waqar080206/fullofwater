@@ -26,8 +26,8 @@ const upcomingRace = {
     highlights: [
       "First US race of the 2026 season",
       "Features new 2026 technical regulations",
-      "Campus pass access to Team Village and Marina",
-      "Live entertainment featuring Farruko and Zedd"
+      "Most Dominant Driver: Max Verstappen",
+      "Most Dominant Team: McLaren"
     ]
   }
 };
