@@ -6,7 +6,7 @@ import ConnectButton from '../components/wallet/ConnectButton';
 
 export default function LandingPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const { address } = useWallet();
 
   return (
@@ -30,15 +30,20 @@ export default function LandingPage() {
           Pick 3 drivers and a constructor under a 60M GameCoin cap.
           Predict race outcomes. Climb the ranks. Redeem to ETH.
         </p>
-        {address ? (
+        {!user ? (
+          <button
+            onClick={login}
+            className="bg-[#e8002d] hover:bg-[#ff1a3e] text-white font-display font-bold text-sm tracking-widest uppercase px-10 py-4 transition-all"
+          >
+            Log In or Sign Up
+          </button>
+        ) : (
           <button
             onClick={() => router.push('/dashboard')}
-            className="bg-[#e8002d] hover:bg-[#ff1a3e] text-white font-display font-bold text-sm tracking-widest uppercase px-10 py-4 transition-all"
+            className="border border-[#e8002d] text-[#e8002d] hover:bg-[#e8002d] hover:text-white font-display font-bold text-sm tracking-widest uppercase px-10 py-4 transition-all"
           >
             Enter the Grid →
           </button>
-        ) : (
-          <ConnectButton />
         )}
       </section>
 
@@ -49,9 +54,9 @@ export default function LandingPage() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { step: '01', title: 'Connect Wallet', desc: 'Sign in with MetaMask. No password. No email. Just your wallet.' },
+            { step: '01', title: 'Sign Up', desc: 'Securely sign up with your email or social accounts. No upfront crypto needed.' },
             { step: '02', title: 'Build Your Team', desc: 'Pick 3 drivers + 1 constructor under 60M GameCoins. Lock before qualifying.' },
-            { step: '03', title: 'Earn GameCoins', desc: 'Score fantasy points, win prediction bets, climb ranks, redeem to ETH.' },
+            { step: '03', title: 'Connect to Earn', desc: 'Connect your MetaMask wallet only when withdrawing to track your on-chain earnings.' },
           ].map(({ step, title, desc }) => (
             <div key={step} className="border border-[#2a2a2a] p-8 hover:border-[#e8002d33] transition-colors">
               <p className="font-display text-[#e8002d] text-5xl font-black mb-4">{step}</p>

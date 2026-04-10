@@ -2,10 +2,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useWallet } from './WalletContext';
 import { authAPI } from '../lib/api';
+import { auth } from '../lib/firebase';
+import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 
 interface User {
   _id: string;
-  walletAddress: string;
+  walletAddress?: string;
   username: string;
   totalPoints: number;
   rank: number;
@@ -16,45 +18,60 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  firebaseUser: FirebaseUser | null;
   token: string | null;
   isLoading: boolean;
   login: () => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
-  user: null, token: null, isLoading: false,
-  login: async () => {}, logout: () => {}, refreshUser: async () => {},
+  user: null, firebaseUser: null, token: null, isLoading: true,
+  login: async () => {}, logout: async () => {}, refreshUser: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { address, signer } = useWallet();
   const [user, setUser] = useState<User | null>(null);
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('laplogic_token');
-    if (savedToken) {
-      setToken(savedToken);
-      // Optionally decode and set user from token or fetch /me endpoint
-    }
+    const unsubscribe = onAuthStateChanged(auth, async (currUser) => {
+      setFirebaseUser(currUser);
+      if (currUser) {
+        // Here you would typically get a custom token from your backend 
+        // to authenticate API requests, or simply use the Firebase ID token.
+        const idToken = await currUser.getIdToken();
+        setToken(idToken);
+        localStorage.setItem('laplogic_token', idToken);
+        // FIXME: fetch backend user here
+        setUser({
+          _id: currUser.uid,
+          username: currUser.displayName || 'Racer',
+          totalPoints: 0,
+          rank: 0,
+          rankName: 'Rookie',
+          gameCoins: 0,
+          tier: 'free'
+        });
+      } else {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('laplogic_token');
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const login = async () => {
-    if (!address || !signer) return;
     setIsLoading(true);
     try {
-      // 1. Get nonce
-      const { nonce } = await authAPI.getNonce(address);
-      // 2. Sign nonce
-      const signature = await signer.signMessage(nonce);
-      // 3. Verify and get JWT
-      const { token: jwt, user: userData } = await authAPI.verify(address, signature, nonce);
-      setToken(jwt);
-      setUser(userData);
-      localStorage.setItem('laplogic_token', jwt);
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
     } catch (err) {
       console.error('Login failed', err);
     } finally {
@@ -62,10 +79,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('laplogic_token');
+  const logout = async () => {
+    setIsLoading(true);
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error('Logout failed', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const refreshUser = async () => {
@@ -74,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, firebaseUser, token, isLoading, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
