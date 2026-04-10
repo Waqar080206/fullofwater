@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0a0a0a;        /* Near black */
+  --bg-secondary: #111111;      /* Card background */
+  --bg-tertiary: #1a1a1a;       /* Elevated surfaces */
+  --accent-red: #e8002d;        /* F1 red */
+  --accent-red-dim: #8b0018;    /* Muted red */
+  --accent-gold: #ffd700;       /* Podium gold */
+  --accent-silver: #c0c0c0;     /* P2 silver */
+  --accent-bronze: #cd7f32;     /* P3 bronze */
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --text-muted: #555555;
+  --border: #2a2a2a;
+  --border-accent: #e8002d33;
+  --success: #00d4aa;
+  --warning: #ffaa00;
+  --danger: #ff4444;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.font-display { font-family: 'Orbitron', monospace; }
+.font-body    { font-family: 'Inter', sans-serif; }
