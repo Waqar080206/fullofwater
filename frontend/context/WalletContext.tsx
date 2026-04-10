@@ -65,10 +65,30 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const _signer = await _provider.getSigner();
       const _address = await _signer.getAddress();
 
+      // Call Backend to verify and get JWT token, bridging Web3 wallet
+      const resContext = await fetch(`http://localhost:5000/api/auth/nonce/${_address}`);
+      const { nonce } = await resContext.json();
+      
+      const signature = await _signer.signMessage(nonce);
+      
+      const authRes = await fetch(`http://localhost:5000/api/auth/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: _address, signature, nonce })
+      });
+      const data = await authRes.json();
+      if (!authRes.ok) throw new Error(data.error);
+
       setProvider(_provider);
       setSigner(_signer);
       setAddress(_address);
       localStorage.setItem('laplogic_wallet', _address);
+      
+      // Override Firebase ID token with custom Backend JWT
+      localStorage.setItem('laplogic_token', data.token);
+      // Dispatch a custom event to notify AuthContext or page to pickup the new backend token
+      window.dispatchEvent(new Event('wallet_connected'));
+
     } catch (err) {
       console.error('Wallet connect failed', err);
     } finally {

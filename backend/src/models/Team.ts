@@ -7,6 +7,7 @@ export interface ITeam extends Document {
   constructor: string;         // constructor ID
   totalCost: number;           // must be <= 60,000,000
   points: number;              // points earned this race
+  mode: 'free' | 'pro';        // game mode selected
   lockedAt: Date;              // locked before qualifying
   isLocked: boolean;
 }
@@ -18,6 +19,7 @@ const TeamSchema = new Schema<ITeam>({
   constructor: { type: String, required: true },
   totalCost: { type: Number, required: true },
   points: { type: Number, default: 0 },
+  mode: { type: String, enum: ['free', 'pro'], default: 'free' },
   lockedAt: { type: Date },
   isLocked: { type: Boolean, default: false },
 });

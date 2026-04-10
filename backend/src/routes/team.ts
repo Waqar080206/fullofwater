@@ -14,9 +14,9 @@ router.get('/:raceId', async (req: AuthRequest, res: Response) => {
 });
 
 // POST /api/team — create team for a race
-// Body: { raceId, drivers: [id1, id2, id3], constructor: id, totalCost }
+// Body: { raceId, drivers: [id1, id2, id3], constructor: id, totalCost, mode }
 router.post('/', async (req: AuthRequest, res: Response) => {
-  const { raceId, drivers, constructor, totalCost } = req.body;
+  const { raceId, drivers, constructor, totalCost, mode } = req.body;
 
   if (drivers.length !== 3) return res.status(400).json({ error: '3 drivers required' });
   if (totalCost > 60_000_000) return res.status(400).json({ error: 'Over cost cap' });
@@ -34,13 +34,14 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     drivers,
     constructor,
     totalCost,
+    mode: mode || 'free'
   });
   res.json(team);
 });
 
 // PUT /api/team/:raceId — update team (only if race is upcoming AND a driver is not racing)
 router.put('/:raceId', async (req: AuthRequest, res: Response) => {
-  const { drivers, constructor, totalCost, swappedDriverId } = req.body;
+  const { drivers, constructor, totalCost, swappedDriverId, mode } = req.body;
 
   const race = await Race.findById(req.params.raceId);
   if (!race) return res.status(404).json({ error: 'Race not found' });
@@ -54,7 +55,7 @@ router.put('/:raceId', async (req: AuthRequest, res: Response) => {
 
   const team = await Team.findOneAndUpdate(
     { userId: req.user!.userId, raceId: req.params.raceId },
-    { drivers, constructor, totalCost },
+    { drivers, constructor, totalCost, mode: mode || 'free' },
     { new: true }
   );
   res.json(team);

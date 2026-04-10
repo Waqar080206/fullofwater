@@ -37,6 +37,8 @@ export default function DashboardPage()
   const [isSpinning, setIsSpinning] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
+  const [activeTeam, setActiveTeam] = useState<any>(null); // NEW: State to hold team
+  const [teamLoading, setTeamLoading] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([
     {
       role: 'model',
@@ -45,8 +47,40 @@ export default function DashboardPage()
   ]);
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const router = useRouter();
+
+  // Load team whenever token or user is available
+  useEffect(() => {
+    if (token) {
+      setTeamLoading(true);
+      // We don't have the race ID in context here easily without a raceAPI call!
+      // So let's fetch upcoming race, then fetch team for that race
+      const fetchTeamData = async () => {
+        try {
+          const res = await fetch('http://localhost:5000/api/race');
+          const races = await res.json();
+          const nextRace = races.find((r: any) => r.status === 'upcoming');
+          
+          if (nextRace) {
+            const teamRes = await fetch(`http://localhost:5000/api/team/${nextRace._id}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (teamRes.ok) {
+              const teamData = await teamRes.json();
+              setActiveTeam(teamData);
+            }
+          }
+        } catch (err) {
+          console.error("Failed fetching team data:", err);
+        } finally {
+          setTeamLoading(false);
+        }
+      };
+      
+      fetchTeamData();
+    }
+  }, [token]);
 
   useEffect(() => {
     if (chatScrollRef.current) {
@@ -111,7 +145,40 @@ export default function DashboardPage()
                 <p className="text-[#707070] text-sm uppercase tracking-wider mb-1">Pilot</p>
                 <p className="font-display font-bold text-4xl">{user.username}</p>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+
+              {/* TEAM OVERVIEW - Show if team exists, otherwise show Arena join */}
+              {teamLoading ? (
+                <div className="bg-[#111] border border-[#222] p-4 text-center text-[#707070] animate-pulse">Loading Team Data...</div>
+              ) : activeTeam ? (
+                <div className="bg-[#111] border border-[#e8002d]/20 p-4 relative overflow-hidden transition-all hover:border-[#e8002d] cursor-pointer" onClick={() => router.push(`/predict/${activeTeam.raceId}`)}>
+                   <div className="absolute right-0 top-0 h-full w-2 bg-[#e8002d]"></div>
+                   <div className="flex justify-between items-center mb-2">
+                     <p className="text-[#e8002d] text-xs uppercase tracking-widest font-bold">Active Team ({activeTeam.mode})</p>
+                     <p className="text-[#707070] text-[10px] uppercase">Race 1</p>
+                   </div>
+                   <p className="font-display font-bold text-white text-lg truncate pr-3">
+                     {activeTeam.drivers.map((dId: string) => {
+                       // Find friendly name if possible, otherwise use ID
+                       const friendly = { 'NOR': 'Norris', 'PIA': 'Piastri', 'RUS': 'Russell', 'ANT': 'Antonelli', 'LEC': 'Leclerc', 'HAM': 'Hamilton', 'VER': 'Verstappen', 'HAD': 'Hadjar', 'ALO': 'Alonso', 'STR': 'Stroll', 'ALB': 'Albon', 'SAI': 'Sainz', 'HUL': 'Hülkenberg', 'BOR': 'Bortoleto', 'GAS': 'Gasly', 'COL': 'Colapinto', 'OCO': 'Ocon', 'BEA': 'Bearman', 'LAW': 'Lawson', 'LIN': 'Lindblad', 'PER': 'Pérez', 'BOT': 'Bottas' }[dId];
+                       return friendly || dId;
+                     }).join(', ')}
+                   </p>
+                   <p className="text-[#a0a0a0] text-sm mb-3">Constructor: <span className="uppercase text-white">{activeTeam.constructor.replace('_', ' ')}</span></p>
+                   <div className="flex justify-between">
+                     <span className="font-display text-[#ffd700] text-sm shrink-0">Cost: ${(activeTeam.totalCost / 1_000_000).toFixed(1)}M</span>
+                     <span className="text-[#00d4aa] text-xs uppercase tracking-widest font-bold cursor-pointer hover:underline">View Predictions →</span>
+                   </div>
+                </div>
+              ) : (
+                <div className="bg-gradient-to-r from-[#e8002d]/10 to-transparent border border-[#e8002d]/30 p-4 flex flex-col justify-center gap-3">
+                   <p className="text-white text-sm">You haven't formed a team yet.</p>
+                   <button onClick={handleJoinArena} className="bg-[#e8002d] w-full text-white py-2 font-display text-sm tracking-widest uppercase font-bold shadow-[0_0_15px_rgba(232,0,45,0.4)] hover:scale-105 transition-transform">
+                      {isSpinning ? 'Ignition...' : 'Enter Arena'}
+                   </button>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-2 mt-auto">
                 <div className="bg-[#111111] p-4 border border-[#222]">
                   <p className="text-[#707070] text-xs uppercase tracking-wider mb-1">Rank</p>
                   <p className="font-display font-bold text-[#e8002d] text-2xl uppercase">{user.rankName}</p>

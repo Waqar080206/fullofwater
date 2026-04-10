@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { DRIVERS, CONSTRUCTORS, COST_CAP } from '../../lib/constants';
-import { teamAPI } from '../../lib/api';
+import { teamAPI, raceAPI } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 
 export default function TeamBuilderPage() {
@@ -17,6 +17,7 @@ export default function TeamBuilderPage() {
   const [activeTab, setActiveTab] = useState<'drivers' | 'constructors'>('drivers');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [targetOverwriteRaceId, setTargetOverwriteRaceId] = useState<string | null>(null);
 
   const totalCost = [
     ...selectedDrivers.map(id => DRIVERS.find(d => d.id === id)?.price || 0),
@@ -49,29 +50,62 @@ export default function TeamBuilderPage() {
   };
 
   const handleSubmit = async () => {
-    // Note: To allow testing UI without auth/raceId constraints instantly, we could bypass this.
-    // For now we keep normal constraints but ensure UI is accessible.
     if (selectedDrivers.length !== 3) { setError('Your team must have exactly 3 drivers.'); return; }
     if (!selectedConstructor) { setError('You must select a constructor.'); return; }
 
+    if (!token) {
+      setError('Please connect your wallet to save your team to the database.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    let targetRaceId = raceId;
+    try {
+      // If no raceId in URL, fetch next upcoming race
+      if (!targetRaceId) {
+        const races = await raceAPI.getAll();
+        const upcomingRace = races.find(r => r.status === 'upcoming');
+        if (!upcomingRace) {
+          throw new Error('No upcoming races available. Cannot save team.');
+        }
+        targetRaceId = upcomingRace._id;
+      }
+
+      await teamAPI.create({
+        raceId: targetRaceId,
+        drivers: selectedDrivers,
+        constructor: selectedConstructor,
+        totalCost,
+        mode: mode || 'free'
+      }, token);
+
+      router.push(`/predict/${targetRaceId}`);
+    } catch (err: any) {
+      if (err.message === 'Team already exists for this race') {
+        setTargetOverwriteRaceId(targetRaceId);
+      } else {
+        console.error("Save Team Error:", err);
+        setError(err.message || 'Failed to save team');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleOverwrite = async () => {
+    if (!targetOverwriteRaceId || !token) return;
     setIsSubmitting(true);
     try {
-      if (raceId && token) {
-        await teamAPI.create({
-          raceId,
-          drivers: selectedDrivers,
-          constructor: selectedConstructor,
-          totalCost,
-        }, token);
-        router.push(`/race/${raceId}`);
-      } else {
-        // Mock successful save if missing raceId/token for UI testing
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1000);
-      }
+      await teamAPI.update(targetOverwriteRaceId, {
+        drivers: selectedDrivers,
+        constructor: selectedConstructor,
+        totalCost,
+        mode: mode || 'free'
+      }, token);
+      setTargetOverwriteRaceId(null);
+      router.push(`/predict/${targetOverwriteRaceId}`);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to overwrite team');
     } finally {
       setIsSubmitting(false);
     }
@@ -90,6 +124,41 @@ export default function TeamBuilderPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col font-sans">
+      
+      {/* Overwrite Modal */}
+      {targetOverwriteRaceId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+          <div className="bg-[#111] border border-[#333] shadow-2xl max-w-md w-full flex flex-col relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#e8002d] opacity-10 blur-3xl rounded-full"></div>
+            
+            <div className="p-8">
+              <h2 className="font-display font-black text-2xl text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                <span className="text-[#e8002d]">⚠</span> Conflict Detected
+              </h2>
+              <p className="text-gray-400 text-sm leading-relaxed mb-8 font-semibold">
+                You already have a confirmed team locked in for this race weekend. Do you want to keep your existing lineup, or overwrite it with this new roster?
+              </p>
+              
+              <div className="flex gap-4 w-full">
+                <button 
+                  onClick={() => router.push('/dashboard')} 
+                  className="flex-1 py-3.5 border border-white/10 text-gray-300 font-bold uppercase tracking-widest text-[11px] hover:bg-white/5 hover:border-white/30 transition-colors"
+                >
+                  Keep Old Team
+                </button>
+                <button 
+                  onClick={handleOverwrite}
+                  disabled={isSubmitting}
+                  className="flex-1 py-3.5 bg-[#e8002d] text-white font-bold uppercase tracking-widest text-[11px] hover:bg-[#ff1a40] transition-colors disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Updating...' : 'Overwrite'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header - Mimicking F1 Fantasy */}
       <header className="sticky top-0 z-40 bg-[#151515] border-b border-white/10 shadow-lg">
         <div className="max-w-[1600px] mx-auto px-4 md:px-8 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">

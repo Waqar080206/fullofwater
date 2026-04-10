@@ -41,12 +41,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (currUser) => {
       setFirebaseUser(currUser);
       if (currUser) {
-        // Here you would typically get a custom token from your backend 
-        // to authenticate API requests, or simply use the Firebase ID token.
+        // Store firebase token temporarily until wallet connects to generate proper backend token
         const idToken = await currUser.getIdToken();
-        setToken(idToken);
-        localStorage.setItem('laplogic_token', idToken);
-        // FIXME: fetch backend user here
+        if (!localStorage.getItem('laplogic_token')) {
+          setToken(idToken);
+          localStorage.setItem('laplogic_token', idToken);
+        }
+        
         setUser({
           _id: currUser.uid,
           username: currUser.displayName || 'Racer',
@@ -60,11 +61,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setToken(null);
         localStorage.removeItem('laplogic_token');
+        localStorage.removeItem('laplogic_wallet');
       }
       setIsLoading(false);
     });
 
-    return () => unsubscribe();
+    // Listen for cross-context wallet connection
+    const handleWalletUpdate = () => {
+      const actualToken = localStorage.getItem('laplogic_token');
+      if (actualToken) {
+        setToken(actualToken);
+      }
+    };
+    window.addEventListener('wallet_connected', handleWalletUpdate);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('wallet_connected', handleWalletUpdate);
+    };
   }, []);
 
   const login = async () => {
@@ -83,6 +97,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       await signOut(auth);
+      // HARD CLEAR: wipe all local info when logging out
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = '/'; // kick back to home and fully ditch React states/cache
     } catch (err) {
       console.error('Logout failed', err);
     } finally {
