@@ -18,8 +18,8 @@ export async function POST(req: NextRequest) {
     // Grab the latest user message
     const latestMessage = messages[messages.length - 1].content;
 
-    // Use the gemini-1.5-flash model (switching to 1.5 since 2.5 is experiencing high demand)
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // Use the gemini-2.5-flash model
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     // Format the history for the model (Google's format: { role: 'user' | 'model', parts: [{ text: string }] })
     // We ignore the very first message from the frontend because it's just the hardcoded UI welcome message,
