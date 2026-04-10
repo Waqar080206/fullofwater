@@ -36,7 +36,7 @@ contract OffGridCore is Ownable, ReentrancyGuard {
     event RewardDistributed(bytes32 indexed raceId, address indexed user, uint256 amount);
     event RaceSettled(bytes32 indexed raceId, uint256 totalPool);
 
-    constructor(address _gameCoin, uint256 _entryFeeCoins, uint256 _platformFeePercent)
+    constructor(address payable _gameCoin, uint256 _entryFeeCoins, uint256 _platformFeePercent)
         Ownable(msg.sender)
     {
         gameCoin = GameCoin(_gameCoin);

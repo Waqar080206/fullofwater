@@ -1,0 +1,7 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/predict/[raceId]/page": "app/predict/[raceId]/page.js",
+  "/page": "app/page.js",
+  "/team/page": "app/team/page.js"
+}
