@@ -49,3 +49,14 @@ export async function distributeRewardOnChain(
   await tx.wait();
   return tx.hash;
 }
+
+export async function getGameCoinBalanceOnChain(walletAddress: string): Promise<number> {
+  const provider = getProvider();
+  const contract = new ethers.Contract(
+    process.env.GAMECOIN_ADDRESS!,
+    ['function getBalance(address user) view returns (uint256)'],
+    provider
+  );
+  const balance = await contract.getBalance(walletAddress);
+  return Number(balance);
+}
