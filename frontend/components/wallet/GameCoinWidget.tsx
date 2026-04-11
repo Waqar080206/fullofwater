@@ -58,7 +58,7 @@ export default function GameCoinWidget() {
           ethAmount: modalType === 'buy' ? parseFloat(inputValue) : gcAmount / GC_PER_ETH
         };
         
-        await fetch('http://localhost:5000/api/auth/sync-balance', {
+        await fetch('${process.env.NEXT_PUBLIC_API_URL}/auth/sync-balance', {
           method: 'POST',
           headers: { 
             'Authorization': `Bearer ${token}`,

@@ -59,12 +59,12 @@ export default function DashboardPage()
       // So let's fetch upcoming race, then fetch team for that race
       const fetchTeamData = async () => {
         try {
-          const res = await fetch('http://localhost:5000/api/race');
+          const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/race');
           const races = await res.json();
           const nextRace = races.find((r: any) => r.status === 'upcoming');
           
           if (nextRace) {
-            const teamRes = await fetch(`http://localhost:5000/api/team/${nextRace._id}`, {
+            const teamRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/team/${nextRace._id}`, {
               headers: { 'Authorization': `Bearer ${token}` }
             });
             if (teamRes.ok) {

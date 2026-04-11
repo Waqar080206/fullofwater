@@ -81,12 +81,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const _signer = await _provider.getSigner();
       const _address = await _signer.getAddress();
 
-      const resContext = await fetch(`http://localhost:5000/api/auth/nonce/${_address}`);
+      const resContext = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/nonce/${_address}`);
       const { nonce } = await resContext.json();
       
       const signature = await _signer.signMessage(nonce);
       
-      const authRes = await fetch(`http://localhost:5000/api/auth/verify`, {
+      const authRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         // NEW: Pass the username to the backend!

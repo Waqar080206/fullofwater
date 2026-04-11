@@ -1,11 +1,11 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { DRIVERS, CONSTRUCTORS, COST_CAP } from '../../lib/constants';
 import { teamAPI, raceAPI } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 
-export default function TeamBuilderPage() {
+function TeamBuilderContent() {
   const searchParams = useSearchParams();
   const raceId = searchParams.get('raceId');
   const mode = searchParams.get('mode'); // 'free' or 'pro'
@@ -467,5 +467,13 @@ function SlotCard({ type, slot, onClickEmpty, onClickRemove, isConstructor = fal
         </div>
       )}
     </div>
+  );
+}
+
+export default function TeamBuilderPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center font-display font-black text-2xl tracking-widest">LOADING APEX...</div>}>
+      <TeamBuilderContent />
+    </Suspense>
   );
 }
