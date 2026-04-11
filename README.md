@@ -1,94 +1,174 @@
-# LapLogic — F1 Fantasy on Chain
+# LapLogic
+### F1 racing strategy game on the blockchain
 
-Pick 3 drivers + 1 constructor. Predict race outcomes. Earn GameCoins. Redeem to ETH.
-
----
-
-## Stack
-
-- **Frontend** — Next.js 14, Tailwind, Ethers.js
-- **Backend** — Node.js, Express, MongoDB, Gemini 2.5 Flash
-- **Contracts** — Solidity 0.8.20, Hardhat, Polygon Amoy
+LapLogic is a Web3-powered racing strategy game built around the 2026 Formula 1 season. You act as a team principal, build your roster under a cost cap, invest your remaining budget into race pools and earn real on-chain rewards based purely on how good your strategy is. Connect your wallet, get GameCoin instantly and play. No crypto knowledge required to get started.
 
 ---
 
-## Structure
+## what it does
+
+- build a team of 3 drivers and 1 constructor within a 60 million GameCoin cost cap
+- invest your remaining budget into the race pool before each race weekend
+- get AI-generated prediction challenges based on real race conditions every week
+- earn GameCoin automatically via smart contract based on your leaderboard performance
+- your rank and earnings are written on-chain permanently. Fully yours and fully verifiable.
+
+---
+
+## tech stack
+
+**frontend**
+- Next.js 14, React 18, Tailwind CSS
+- Ethers.js v6, Firebase, Groq SDK, Lucide React
+
+**backend**
+- Node.js v20+, Express, MongoDB with Mongoose
+- Google Gemini API, Ethers.js v6, JSON Web Token
+
+**smart contracts**
+- Solidity ^0.8.20, Hardhat, OpenZeppelin Contracts v5
+- Deployed on Polygon Amoy Testnet (chainId: 80002)
+
+---
+
+## project structure
 
 ```
 laplogic/
-├── frontend/
-├── backend/
-├── contracts/
-├── FRONTEND.md    ← full frontend spec
-├── BACKEND.md     ← full backend spec
-├── CONTRACTS.md   ← full contracts spec
-└── README.md
+├── frontend/        # Next.js app
+├── backend/         # Express API server
+└── contracts/       # Hardhat + Solidity
 ```
 
 ---
 
-## How to Build This
+## getting started locally
 
-Each spec file is a self-contained prompt for an AI coding assistant (Gemini, Copilot, etc.).
-Feed them in this order:
+You will need three terminals running at the same time.
 
-### Step 1 — Contracts
-Feed `CONTRACTS.md` first.
-> "Build the complete Solidity contracts and Hardhat setup following this spec."
-
-Copy deployed addresses to `backend/.env` and `frontend/.env.local`.
-
-### Step 2 — Backend
-Feed `BACKEND.md` second.
-> "Build the complete Node.js + Express + MongoDB backend following this spec."
-
-### Step 3 — Frontend
-Feed `FRONTEND.md` last.
-> "Build the complete Next.js frontend following this spec."
+### prerequisites
+- Node.js v20+
+- MetaMask wallet with test MATIC
+- MongoDB Atlas cluster
+- Gemini API key
+- Polygonscan API key
 
 ---
 
-## Running Locally
+### 1. contracts
 
-**Prerequisites:** You must have the `.env` files set up in each directory as specified in the specs. For local development, it is recommended to run a local Hardhat node instead of deploying to Amoy every time.
-
-Open three separate terminals:
-
-### 1. Smart Contracts
-Start a local blockchain and deploy the contracts:
 ```bash
 cd contracts
+npm install
+```
+
+Start a local Hardhat node:
+```bash
 npx hardhat node
 ```
-*In a separate terminal window, deploy to the local network:*
+
+Open a new terminal and deploy the contracts:
 ```bash
-cd contracts
 npx hardhat run scripts/deploy.ts --network localhost
 ```
-*Copy the deployed addresses to the `backend/.env` and `frontend/.env.local` files.*
 
-### 2. Backend
-Start the Express server:
-```bash
-cd backend
-npm run dev
-```
-*(Runs on http://localhost:5000 by default)*
+Copy the contract addresses printed in the terminal output. You will need them in the next steps.
 
-### 3. Frontend
-Start the Next.js development server:
-```bash
-cd frontend
-npm run dev
+Create a `.env` file inside `/contracts`:
 ```
-*(Runs on http://localhost:3000 by default)*
+POLYGON_AMOY_RPC=
+PRIVATE_KEY=
+POLYGONSCAN_API_KEY=
+BACKEND_WALLET_ADDRESS=
+```
 
 ---
 
-## Env Files
+### 2. backend
 
-| File | Defined in |
-|------|-----------|
-| `backend/.env` | BACKEND.md → Environment Variables |
-| `frontend/.env.local` | FRONTEND.md → Environment Variables |
-| `contracts/.env` | CONTRACTS.md → Environment Variables |
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file inside `/backend`:
+```
+PORT=5000
+MONGO_URI=
+JWT_SECRET=
+GEMINI_API_KEY=
+POLYGON_RPC_URL=
+ADMIN_PRIVATE_KEY=
+```
+
+Start the server:
+```bash
+npm run dev
+```
+
+Server runs on `http://localhost:5000`
+
+Optionally seed the database:
+```bash
+npx ts-node seedRace.ts
+npx ts-node scripts/seedPredictions.ts
+```
+
+---
+
+### 3. frontend
+
+```bash
+cd frontend
+npm install
+```
+
+Create a `.env.local` file inside `/frontend` using the contract addresses from step 1:
+```
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_GAMECOIN_ADDRESS=
+NEXT_PUBLIC_LAPLOGIC_CORE_ADDRESS=
+NEXT_PUBLIC_RANK_REGISTRY_ADDRESS=
+```
+
+Start the app:
+```bash
+npm run dev
+```
+
+App runs on `http://localhost:3000`
+
+---
+
+## smart contracts
+
+| contract | purpose |
+|---|---|
+| `GameCoin.sol` | ERC-20 in-game currency, cost cap enforcement and ETH redemption |
+| `LapLogicCore.sol` | game state, prediction validation and automatic reward distribution |
+| `RankRegistry.sol` | on-chain leaderboard and permanent user rank history |
+
+### deployment scripts
+
+```bash
+npm run compile          # compile all contracts
+npm run test             # run test suites
+npm run deploy:amoy      # deploy to Polygon Amoy testnet
+npm run deploy:polygon   # deploy to Polygon mainnet
+npm run verify:amoy      # verify contracts on Polygonscan
+```
+
+---
+
+## available scripts
+
+| directory | command | description |
+|---|---|---|
+| frontend | `npm run dev` | start dev server |
+| frontend | `npm run build` | production build |
+| backend | `npm run dev` | start with hot reload |
+| backend | `npm run build` | compile TypeScript |
+| contracts | `npm run compile` | compile Solidity |
+| contracts | `npm run test` | run contract tests |
+
+---
