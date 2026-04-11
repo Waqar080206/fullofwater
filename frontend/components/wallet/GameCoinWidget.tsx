@@ -49,8 +49,8 @@ export default function GameCoinWidget() {
       setLastTxAmount(gcAmount);
 
       // Tell the backend to update MongoDB and record the receipt!
-      const token = localStorage.getItem('token');
-      if (token) {
+      const lapLogicToken = localStorage.getItem('laplogic_token');
+      if (lapLogicToken) {
         // Calculate the exact amounts to send to the DB
         const payload = {
           transactionType: modalType.toUpperCase(),
@@ -58,10 +58,10 @@ export default function GameCoinWidget() {
           ethAmount: modalType === 'buy' ? parseFloat(inputValue) : gcAmount / GC_PER_ETH
         };
         
-        await fetch('${process.env.NEXT_PUBLIC_API_URL}/auth/sync-balance', {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/sync-balance`, {
           method: 'POST',
           headers: { 
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${lapLogicToken}`,
             'Content-Type': 'application/json' 
           },
           body: JSON.stringify(payload)
