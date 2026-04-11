@@ -1,4 +1,7 @@
-# LapLogic
+<p align="left">
+  <img src="https://github.com/Waqar080206/fullofwater/blob/main/frontend/public/logo%20(2).png" width="150" />
+</p>
+
 ### F1 racing strategy game on the blockchain
 
 LapLogic is a Web3-powered racing strategy game built around the 2026 Formula 1 season. You act as a team principal, build your roster under a cost cap, invest your remaining budget into race pools and earn real on-chain rewards based purely on how good your strategy is. Connect your wallet, get GameCoin instantly and play. No crypto knowledge required to get started.
