@@ -16,17 +16,17 @@ export default function LandingPage() {
       {/* Hero Section with Video Background */}
       <section className="relative flex flex-col items-center justify-center min-h-screen text-center px-4 overflow-hidden">
         {/* Premium Video Background */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            className="absolute inset-0 w-full h-full object-cover top-0"
-          >
-            <source src="/Video.mp4" type="video/mp4" />
-          </video>
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <iframe
+            src="https://player.cloudinary.com/embed/?cloud_name=dmlsqpkve&public_id=Video_gomfbq"
+            width="640"
+            height="360" 
+            style={{ height: '100%', width: '100%', objectFit: 'cover', transform: 'scale(1.5)' }}
+            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+            allowFullScreen
+            frameBorder="0"
+            className="absolute inset-0 w-full h-full top-0 pointer-events-none"
+          ></iframe>
           {/* Dark gradient overlay to ensure text is legible */}
           <div className="absolute inset-0 w-full h-full object-cover brightness-110 contrast-110 bg-black/20" />
         </div>
