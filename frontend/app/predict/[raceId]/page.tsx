@@ -1,38 +1,61 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { predictionAPI } from '../../../lib/api';
+import { useRouter } from 'next/navigation';
+import { predictionAPI, teamAPI } from '../../../lib/api';
 import PredictionCard from '../../../components/prediction/PredictionCard';
 import { useAuth } from '../../../context/AuthContext';
 
 export default function PredictPage({ params }: { params: { raceId: string } }) {
   const [predictions, setPredictions] = useState<any[]>([]);
   const { token, user } = useAuth();
-  const searchParams = useSearchParams();
   const router = useRouter();
   
-  // Convert unused budget into temporary/bonus GameCoins
-  const leftoverBudget = Number(searchParams.get('leftover')) || 0;
-  const bonusGC = Math.floor(leftoverBudget / 1_000); // Ex: $1.5M leftover = 1,500 bonus GC
-  const totalAvailableGC = (user?.gameCoins || 0) + bonusGC;
+  // Initialize total available GC internally based on user's database team leftover budget
+  const [localGameCoins, setLocalGameCoins] = useState<number>(0);
+  const [leftoverBudget, setLeftoverBudget] = useState<number>(0);
+  const bonusGC = leftoverBudget;
 
   useEffect(() => {
     if (token) {
+      // Fetch user's team for this race to calculate exact leftover budget for predictions
+      teamAPI.get(params.raceId, token)
+        .then((team) => {
+          if (team && team.totalCost) {
+             const budgetRemaining = 60_000_000 - team.totalCost;
+             setLeftoverBudget(budgetRemaining);
+             // GameCoins derived from 1:1 equivalent of leftover cost cap budget:
+             setLocalGameCoins(budgetRemaining + (user?.gameCoins || 0));
+          } else {
+             setLocalGameCoins(user?.gameCoins || 0);
+          }
+        })
+        .catch(() => setLocalGameCoins(user?.gameCoins || 0));
+        
       predictionAPI.getByRace(params.raceId, token).catch(() => []).then(setPredictions);
     }
-  }, [params.raceId, token]);
+  }, [params.raceId, token, user?.gameCoins]);
 
   const handleBet = async (predictionId: string, chosenOption: 'A' | 'B', amountStaked: number) => {
     if (!token) return;
-    await predictionAPI.placeBet({
-      predictionId,
-      raceId: params.raceId,
-      chosenOption,
-      amountStaked,
-    }, token);
-    
-    // Refresh predictions
-    predictionAPI.getByRace(params.raceId, token).catch(() => []).then(setPredictions);
+    try {
+      await predictionAPI.placeBet({
+        predictionId,
+        raceId: params.raceId,
+        chosenOption,
+        amountStaked,
+      }, token);
+      
+      // Deduct coins locally for immediate feedback
+      setLocalGameCoins(prev => Math.max(0, prev - amountStaked));
+
+      // Refresh predictions to fetch updated pools
+      const updatedPredictions = await predictionAPI.getByRace(params.raceId, token);
+      setPredictions(updatedPredictions);
+    } catch (err) {
+      console.error('Failed to place bet', err);
+      // Let the PredictionCard handle its internal error state (or expand an alert here in the future)
+      throw err; 
+    }
   };
 
   return (
@@ -45,8 +68,16 @@ export default function PredictPage({ params }: { params: { raceId: string } }) 
            RACE <span className="text-[#e8002d]">PREDICTIONS</span>
         </h1>
         <p className="text-[#a0a0a0] max-w-2xl mx-auto text-sm">
-          You saved <span className="text-[#00d4aa] font-bold">${(leftoverBudget / 1_000_000).toFixed(1)}M</span> of your cost cap! 
-          This has granted you a bonus <span className="text-[#ffd700] font-bold">{bonusGC.toLocaleString()} GameCoins</span> to stake on live race multipliers.
+          {bonusGC > 0 ? (
+            <>
+              You saved <span className="text-[#00d4aa] font-bold">${(leftoverBudget / 1_000_000).toFixed(1)}M</span> of your cost cap! 
+              This grants you a bonus pool of <span className="text-[#ffd700] font-bold">{localGameCoins.toLocaleString()} GameCoins</span> to stake on live race multipliers.
+            </>
+          ) : (
+            <>
+               Use your available <span className="text-[#ffd700] font-bold">{localGameCoins.toLocaleString()} GameCoins</span> to wager on live dynamic-odds race events.
+            </>
+          )}
         </p>
       </div>
 
@@ -55,7 +86,7 @@ export default function PredictPage({ params }: { params: { raceId: string } }) 
           <PredictionCard
             key={prediction._id}
             prediction={prediction}
-            userCoins={totalAvailableGC}
+            userCoins={localGameCoins}
             onBet={handleBet}
           />
         ))}

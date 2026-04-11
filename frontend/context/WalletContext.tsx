@@ -23,10 +23,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isConnecting, setIsConnecting] = useState(false);
 
   useEffect(() => {
-    // Auto-reconnect if wallet was previously connected
+    // Auto-reconnect if wallet was previously connected AND no valid token exists
+    // (If token exists, AuthContext will handle hydration without requiring an annoying signature)
     const savedAddress = localStorage.getItem('laplogic_wallet');
-    if (savedAddress && window.ethereum) {
+    const hasToken = localStorage.getItem('laplogic_token');
+    
+    if (savedAddress && window.ethereum && !hasToken) {
       connect();
+    } else if (savedAddress && window.ethereum && hasToken) {
+      // Just silently restore the provider/signer so ethers.js calls still work
+      const _provider = new ethers.BrowserProvider(window.ethereum);
+      setProvider(_provider);
+      _provider.getSigner().then(_signer => {
+        setSigner(_signer);
+        setAddress(savedAddress);
+      }).catch(console.error);
     }
   }, []);
 

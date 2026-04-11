@@ -6,7 +6,6 @@ export interface IBet extends Document {
   raceId: mongoose.Types.ObjectId;
   chosenOption: 'A' | 'B';
   amountStaked: number;          // in GameCoins
-  potentialReturn: number;       // amountStaked * multiplierWin
   result: 'win' | 'loss' | 'pending';
   settledAt: Date | null;
 }
@@ -17,7 +16,6 @@ const BetSchema = new Schema<IBet>({
   raceId: { type: Schema.Types.ObjectId, ref: 'Race', required: true },
   chosenOption: { type: String, enum: ['A', 'B'], required: true },
   amountStaked: { type: Number, required: true },
-  potentialReturn: { type: Number, required: true },
   result: { type: String, enum: ['win', 'loss', 'pending'], default: 'pending' },
   settledAt: { type: Date, default: null },
 });

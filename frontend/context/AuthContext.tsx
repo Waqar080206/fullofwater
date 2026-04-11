@@ -37,6 +37,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Initialize token from localStorage instantly on mount
+  useEffect(() => {
+    const storedToken = localStorage.getItem('laplogic_token');
+    if (storedToken) {
+      setToken(storedToken);
+      refreshUser();
+    }
+  }, []);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currUser) => {
       setFirebaseUser(currUser);
@@ -48,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.setItem('laplogic_token', idToken);
         }
         
-        setUser({
+        setUser(prev => prev || {
           _id: currUser.uid,
           username: currUser.displayName || 'Racer',
           totalPoints: 0,
@@ -58,10 +67,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           tier: 'free'
         });
       } else {
-        setUser(null);
-        setToken(null);
-        localStorage.removeItem('laplogic_token');
-        localStorage.removeItem('laplogic_wallet');
+        // ONLY clear auth if there's no Web3 JWT Token either
+        const currentToken = localStorage.getItem('laplogic_token');
+        if (!currentToken) {
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem('laplogic_token');
+          localStorage.removeItem('laplogic_wallet');
+        }
       }
       setIsLoading(false);
     });
@@ -109,8 +122,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const refreshUser = async () => {
-    // Fetch updated user data from backend
-    // Implement GET /api/auth/me endpoint or decode from token
+    const currentToken = localStorage.getItem('laplogic_token');
+    if (!currentToken) return;
+
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/me', {
+        headers: { Authorization: `Bearer ${currentToken}` }
+      });
+      if (res.ok) {
+        const { user: backendUser } = await res.json();
+        setUser(backendUser);
+      } else {
+        // Token is burned or invalid
+        localStorage.removeItem('laplogic_token');
+        setToken(null);
+        setUser(null);
+      }
+    } catch (err) {
+      console.error('Failed to sync user data', err);
+    }
   };
 
   return (

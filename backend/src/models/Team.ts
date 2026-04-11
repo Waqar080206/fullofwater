@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface ITeam extends Document {
   userId: mongoose.Types.ObjectId;
   raceId: mongoose.Types.ObjectId;
+  name?: string;               // Optional team name
   drivers: string[];           // array of 3 driver IDs (from constants)
   constructorId: string;       // constructor ID
   totalCost: number;           // must be <= 60,000,000
@@ -15,6 +16,7 @@ export interface ITeam extends Document {
 const TeamSchema = new Schema<ITeam>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   raceId: { type: Schema.Types.ObjectId, ref: 'Race', required: true },
+  name: { type: String, default: 'My Racing Team' },
   drivers: { type: [String], required: true, validate: (v: string[]) => v.length === 3 },
   constructorId: { type: String, required: true },
   totalCost: { type: Number, required: true },

@@ -44,4 +44,20 @@ router.post('/verify', async (req: Request, res: Response) => {
   }
 });
 
+// GET /api/auth/me
+// Uses existing JWT to return full user object
+router.get('/me', async (req: Request, res: Response) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No token' });
+
+  try {
+    const verified = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    const user = await User.findById(verified.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ user });
+  } catch (err) {
+    res.status(401).json({ error: 'Token invalid' });
+  }
+});
+
 export default router;

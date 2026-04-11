@@ -43,6 +43,7 @@ export const teamAPI = {
   get: (raceId: string, token: string) => request<any>('GET', `/team/${raceId}`, undefined, token),
   create: (data: any, token: string) => request<any>('POST', '/team', data, token),
   update: (raceId: string, data: any, token: string) => request<any>('PUT', `/team/${raceId}`, data, token),
+  updateName: (raceId: string, name: string, token: string) => request<any>('PATCH', `/team/${raceId}/name`, { name }, token),
 };
 
 // Predictions

@@ -35,6 +35,11 @@ export default function RaceDashboardPage({ params }: { params: { raceId: string
   const [team, setTeam] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Team Naming State
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [teamNameInput, setTeamNameInput] = useState('');
+  const [isSavingName, setIsSavingName] = useState(false);
+
   const [pollVoted, setPollVoted] = useState(false);
   const [pollResults, setPollResults] = useState<{ id: string, label: string, percent: number }[]>([
     { id: '1', label: 'Max Verstappen', percent: 45 },
@@ -48,6 +53,21 @@ export default function RaceDashboardPage({ params }: { params: { raceId: string
     setPollVoted(true);
     // Artificially boost the clicked option
     setPollResults(prev => prev.map(p => p.id === id ? { ...p, percent: Math.min(100, p.percent + 6) } : { ...p, percent: Math.max(0, p.percent - 2) }));
+  };
+
+  // Handle Name Save
+  const handleSaveName = async () => {
+    if (!token || !teamNameInput.trim()) return;
+    setIsSavingName(true);
+    try {
+      const updated = await teamAPI.updateName(race._id, teamNameInput, token);
+      setTeam({ ...team, name: updated.name });
+      setIsEditingName(false);
+    } catch (err) {
+      console.error('Failed to update name', err);
+    } finally {
+      setIsSavingName(false);
+    }
   };
 
   // Mock Live Leaderboard Data (if race is active)
@@ -109,9 +129,46 @@ export default function RaceDashboardPage({ params }: { params: { raceId: string
           
           {team ? (
             <div className="space-y-6">
+              <div className="flex flex-col gap-2 bg-[#1a1a1a] border border-[#333] p-4 rounded-lg">
+                <div className="flex justify-between items-center w-full">
+                  <span className="text-[#707070] uppercase tracking-widest text-[10px] font-bold">Team Identifier</span>
+                  {isEditingName ? (
+                     <button 
+                       onClick={handleSaveName}
+                       disabled={isSavingName}
+                       className="text-[#00d4aa] text-[10px] uppercase font-bold tracking-wider hover:underline"
+                     >
+                       {isSavingName ? 'Saving...' : 'Lock Initial'}
+                     </button>
+                  ) : (
+                     <button 
+                       onClick={() => { setTeamNameInput(team.name || 'My Racing Team'); setIsEditingName(true); }}
+                       className="text-[#e8002d] text-[10px] uppercase font-bold tracking-wider hover:underline"
+                     >
+                       Rename Team
+                     </button>
+                  )}
+                </div>
+                
+                {isEditingName ? (
+                  <input 
+                    type="text" 
+                    maxLength={30}
+                    value={teamNameInput}
+                    onChange={e => setTeamNameInput(e.target.value)}
+                    className="w-full bg-[#050505] border border-[#444] text-white p-2 rounded text-lg font-display uppercase tracking-wider focus:outline-none focus:border-[#00d4aa]"
+                    autoFocus
+                  />
+                ) : (
+                  <span className="text-white text-2xl font-display font-black uppercase tracking-wide">
+                    {team.name || 'My Racing Team'}
+                  </span>
+                )}
+              </div>
+
               <div className="flex justify-between items-center bg-[#1a1a1a] border border-[#333] p-4 rounded-lg">
-                <span className="text-[#707070] uppercase tracking-widest text-xs font-bold">Game Mode</span>
-                <span className={`uppercase font-display font-bold tracking-wider px-3 py-1 rounded text-xs ${
+                <span className="text-[#707070] uppercase tracking-widest text-[10px] font-bold">Game Mode</span>
+                <span className={`uppercase font-display font-bold tracking-wider px-3 py-1 rounded text-[10px] ${
                   team.mode === 'pro' ? 'bg-[#ffd700]/20 text-[#ffd700] border border-[#ffd700]' : 'bg-[#e8002d]/20 text-[#e8002d] border border-[#e8002d]'
                 }`}>
                   {team.mode} Grid
@@ -119,7 +176,7 @@ export default function RaceDashboardPage({ params }: { params: { raceId: string
               </div>
 
               <div>
-                <p className="text-[#707070] uppercase tracking-widest text-xs font-bold mb-3">Locked Drivers</p>
+                <p className="text-[#707070] uppercase tracking-widest text-[10px] font-bold mb-3">Locked Drivers</p>
                 <div className="grid grid-cols-3 gap-3">
                   {team.drivers.map((driverId: string) => (
                     <div key={driverId} className="bg-[#050505] border border-[#222] p-4 flex flex-col items-center justify-center text-center rounded">

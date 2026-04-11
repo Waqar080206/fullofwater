@@ -28,7 +28,9 @@ router.post('/generate/:raceId', authMiddleware, adminMiddleware, async (req: Au
       question: q.question,
       optionA: q.optionA,
       optionB: q.optionB,
-      multiplierWin: q.multiplierWin,
+      status: 'open',
+      poolA: 0,
+      poolB: 0
     }))
   );
   res.json(predictions);
@@ -44,7 +46,8 @@ router.post('/bet', authMiddleware, async (req: AuthRequest, res: Response) => {
   if (user.gameCoins < amountStaked) return res.status(400).json({ error: 'Insufficient GameCoins' });
 
   const prediction = await Prediction.findById(predictionId);
-  if (!prediction || prediction.isSettled) return res.status(400).json({ error: 'Prediction not available' });
+  if (!prediction) return res.status(404).json({ error: 'Prediction not found' });
+  if (prediction.status !== 'open') return res.status(400).json({ error: 'Prediction market is not open' });
 
   const existing = await Bet.findOne({ userId: req.user!.userId, predictionId });
   if (existing) return res.status(400).json({ error: 'Already bet on this prediction' });
@@ -52,6 +55,14 @@ router.post('/bet', authMiddleware, async (req: AuthRequest, res: Response) => {
   // Deduct coins
   user.gameCoins -= amountStaked;
   await user.save();
+  
+  // Atomically increment the relevant pool
+  if (chosenOption === 'A') {
+    prediction.poolA += amountStaked;
+  } else {
+    prediction.poolB += amountStaked;
+  }
+  await prediction.save();
 
   const bet = await Bet.create({
     userId: req.user!.userId,
@@ -59,7 +70,6 @@ router.post('/bet', authMiddleware, async (req: AuthRequest, res: Response) => {
     raceId,
     chosenOption,
     amountStaked,
-    potentialReturn: amountStaked * prediction.multiplierWin,
   });
 
   res.json(bet);
@@ -71,11 +81,17 @@ router.post('/settle/:predictionId', authMiddleware, adminMiddleware, async (req
   const { correctOption } = req.body;
   const prediction = await Prediction.findByIdAndUpdate(
     req.params.predictionId,
-    { correctOption, isSettled: true },
+    { correctOption, status: 'settled', isSettled: true },
     { new: true }
   );
 
   if (!prediction) return res.status(404).json({ error: 'Prediction not found' });
+
+  const totalPool = prediction.poolA + prediction.poolB;
+  const allocatablePool = totalPool * 0.95; // 5% house edge
+  
+  const winningPoolAmount = correctOption === 'A' ? prediction.poolA : prediction.poolB;
+  const winningMultiplier = winningPoolAmount > 0 ? (allocatablePool / winningPoolAmount) : 1; // if 0, multiplier fallback
 
   // Settle all bets for this prediction
   const bets = await Bet.find({ predictionId: prediction._id, result: 'pending' });
@@ -84,13 +100,20 @@ router.post('/settle/:predictionId', authMiddleware, adminMiddleware, async (req
     const won = bet.chosenOption === correctOption;
     bet.result = won ? 'win' : 'loss';
     bet.settledAt = new Date();
-    await bet.save();
-
-    if (won) {
+    
+    if (won && winningPoolAmount > 0) {
+      const payout = Math.floor(bet.amountStaked * winningMultiplier);
       await User.findByIdAndUpdate(bet.userId, {
-        $inc: { gameCoins: bet.potentialReturn },
+        $inc: { gameCoins: payout },
+      });
+    } else if (won && winningPoolAmount === 0) {
+      // Refund if somehow pool was 0 (shouldn't happen for a winning bet, but fallback)
+      await User.findByIdAndUpdate(bet.userId, {
+        $inc: { gameCoins: bet.amountStaked },
       });
     }
+    
+    await bet.save();
     // loss: coins already deducted at bet time
   }
 

@@ -61,4 +61,22 @@ router.put('/:raceId', async (req: AuthRequest, res: Response) => {
   res.json(team);
 });
 
+// PATCH /api/team/:raceId/name — update team name
+router.patch('/:raceId/name', async (req: AuthRequest, res: Response) => {
+  const { name } = req.body;
+  if (!name || typeof name !== 'string' || name.trim().length === 0) {
+    return res.status(400).json({ error: 'Valid team name is required' });
+  }
+
+  const team = await Team.findOneAndUpdate(
+    { userId: req.user!.userId, raceId: req.params.raceId },
+    { name: name.trim() },
+    { new: true }
+  );
+
+  if (!team) return res.status(404).json({ error: 'Team not found for this race' });
+  
+  res.json(team);
+});
+
 export default router;
