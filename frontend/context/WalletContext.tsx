@@ -47,10 +47,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // NEW: Ask for username before anything else!
-    const desiredUsername = prompt("Welcome to LapLogic! Please enter a username for your Profile Name:");
-    if (!desiredUsername) return; // cancel login if they hit cancel
-
     setIsConnecting(true);
     try {
       const _provider = new ethers.BrowserProvider(window.ethereum);
@@ -89,8 +85,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const authRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // NEW: Pass the username to the backend!
-        body: JSON.stringify({ address: _address, signature, nonce, username: desiredUsername }) 
+        body: JSON.stringify({ address: _address, signature, nonce }) 
       });
       const data = await authRes.json();
       if (!authRes.ok) throw new Error(data.error);
