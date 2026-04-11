@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
+import GameCoinWidget from '../../components/wallet/GameCoinWidget'; // Adjust path if needed
 
 // Hardcoded Miami GP data crafted to emulate an API response payload
 const upcomingRace = {
@@ -193,6 +194,11 @@ export default function DashboardPage()
                 <p className="font-display font-bold text-[#ffd700] text-2xl">
                   {(user.gameCoins / 1_000_000).toFixed(1)}M
                 </p>
+              </div>
+
+              {/* ADD THIS NEW BLOCK HERE */}
+              <div className="mt-4">
+                <GameCoinWidget />
               </div>
             </div>
           ) : (

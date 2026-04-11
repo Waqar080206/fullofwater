@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { useWallet } from '../context/WalletContext';
 import ConnectButton from '../components/wallet/ConnectButton';
+import GameCoinWidget from '../components/wallet/GameCoinWidget'; // Adjust path if needed
 
 export default function LandingPage() {
   const router = useRouter();
@@ -95,6 +96,7 @@ export default function LandingPage() {
   ))}
         </div>
       </section>
+      <GameCoinWidget />
     </div>
   );
 }

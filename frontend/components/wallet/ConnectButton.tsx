@@ -6,7 +6,7 @@ export default function ConnectButton() {
   const { address, connect, disconnect, isConnecting } = useWallet();
   const { user, login, logout, isLoading } = useAuth();
 
-  // If user is not logged in via Firebase, we can show a Sign In button
+  // If user is not logged in, show Log In
   if (!user) {
     return (
       <button
@@ -50,7 +50,7 @@ export default function ConnectButton() {
         Hi, {user.username} | {address.slice(0, 6)}...{address.slice(-4)}
       </span>
       <button
-        onClick={() => { disconnect(); }}
+        onClick={disconnect}
         className="border border-[#2a2a2a] text-[#555] hover:border-[#e8002d] hover:text-[#e8002d] font-display text-xs tracking-widest uppercase px-4 py-2 transition-all"
       >
         DISCONNECT WALLET

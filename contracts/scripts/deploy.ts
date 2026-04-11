@@ -8,7 +8,7 @@ async function main() {
   // 1. Deploy GameCoin
   // ratePerEth: 60,000,000 GameCoins per 1 ETH/MATIC
   const GameCoin = await ethers.getContractFactory('GameCoin');
-  const gameCoin = await GameCoin.deploy(60_000_000);
+  const gameCoin = await GameCoin.deploy(12000);
   await gameCoin.waitForDeployment();
   console.log('GameCoin deployed:', await gameCoin.getAddress());
 
