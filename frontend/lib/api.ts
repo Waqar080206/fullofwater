@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL}';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 function getHeaders(token?: string | null) {
   return {
