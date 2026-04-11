@@ -5,6 +5,7 @@ import Prediction from '../models/Prediction';
 import Bet from '../models/Bet';
 import User from '../models/User';
 import Race from '../models/Race';
+import Team from '../models/Team';
 import { generatePredictionQuestions } from '../services/gemini';
 
 const router = Router();
@@ -43,7 +44,7 @@ router.post('/bet', authMiddleware, async (req: AuthRequest, res: Response) => {
 
   const user = await User.findById(req.user!.userId);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  if (user.gameCoins < amountStaked) return res.status(400).json({ error: 'Insufficient GameCoins' });
+  let totalAvailable = user.gameCoins; const userTeam = await Team.findOne({ userId: req.user!.userId, raceId }); if (userTeam && userTeam.totalCost) { totalAvailable += (60_000_000 - userTeam.totalCost); } if (totalAvailable < amountStaked) return res.status(400).json({ error: 'Insufficient GameCoins' });
 
   const prediction = await Prediction.findById(predictionId);
   if (!prediction) return res.status(404).json({ error: 'Prediction not found' });
@@ -52,9 +53,23 @@ router.post('/bet', authMiddleware, async (req: AuthRequest, res: Response) => {
   const existing = await Bet.findOne({ userId: req.user!.userId, predictionId });
   if (existing) return res.status(400).json({ error: 'Already bet on this prediction' });
 
-  // Deduct coins
-  user.gameCoins -= amountStaked;
-  await user.save();
+  // Deduct leftover budget then GC
+  if (userTeam && userTeam.totalCost) {
+    const leftover = 60_000_000 - userTeam.totalCost;
+    if (leftover >= amountStaked) {
+      userTeam.totalCost += amountStaked;
+      await userTeam.save();
+    } else {
+      const rem = amountStaked - leftover;
+      userTeam.totalCost = 60_000_000;
+      await userTeam.save();
+      user.gameCoins -= rem;
+      await user.save();
+    }
+  } else {
+    user.gameCoins -= amountStaked;
+    await user.save();
+  }
   
   // Atomically increment the relevant pool
   if (chosenOption === 'A') {
@@ -121,3 +136,5 @@ router.post('/settle/:predictionId', authMiddleware, adminMiddleware, async (req
 });
 
 export default router;
+
+
