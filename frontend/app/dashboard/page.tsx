@@ -59,7 +59,7 @@ export default function DashboardPage()
       // So let's fetch upcoming race, then fetch team for that race
       const fetchTeamData = async () => {
         try {
-          const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/race');
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/race`);
           const races = await res.json();
           const nextRace = races.find((r: any) => r.status === 'upcoming');
           
