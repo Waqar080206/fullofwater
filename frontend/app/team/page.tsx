@@ -79,7 +79,7 @@ export default function TeamBuilderPage() {
         mode: mode || 'free'
       }, token);
 
-      router.push(`/predict/${targetRaceId}`);
+      router.push(`/predict/${targetRaceId}?leftover=${remainingBudget}`);
     } catch (err: any) {
       if (err.message === 'Team already exists for this race') {
         setTargetOverwriteRaceId(targetRaceId);
@@ -103,7 +103,8 @@ export default function TeamBuilderPage() {
         mode: mode || 'free'
       }, token);
       setTargetOverwriteRaceId(null);
-      router.push(`/predict/${targetOverwriteRaceId}`);
+      // Navigate to the Prediction UI to utilize leftover cache
+      router.push(`/predict/${targetOverwriteRaceId}?leftover=${remainingBudget}`);
     } catch (err: any) {
       setError(err.message || 'Failed to overwrite team');
     } finally {

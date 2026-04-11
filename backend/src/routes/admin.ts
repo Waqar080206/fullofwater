@@ -43,7 +43,7 @@ router.post('/race/:id/results', async (req: AuthRequest, res: Response) => {
   const teams = await Team.find({ raceId: race._id });
 
   for (const team of teams) {
-    const points = calculateTeamPoints(team.drivers, team.constructor, results);
+    const points = calculateTeamPoints(team.drivers, team.constructorId, results);
     team.points = points;
     await team.save();
 

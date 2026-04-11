@@ -150,7 +150,7 @@ export default function DashboardPage()
               {teamLoading ? (
                 <div className="bg-[#111] border border-[#222] p-4 text-center text-[#707070] animate-pulse">Loading Team Data...</div>
               ) : activeTeam ? (
-                <div className="bg-[#111] border border-[#e8002d]/20 p-4 relative overflow-hidden transition-all hover:border-[#e8002d] cursor-pointer" onClick={() => router.push(`/predict/${activeTeam.raceId}`)}>
+                <div className="bg-[#111] border border-[#e8002d]/20 p-4 relative overflow-hidden transition-all hover:border-[#e8002d] cursor-pointer" onClick={() => router.push(`/race/${activeTeam.raceId}`)}>
                    <div className="absolute right-0 top-0 h-full w-2 bg-[#e8002d]"></div>
                    <div className="flex justify-between items-center mb-2">
                      <p className="text-[#e8002d] text-xs uppercase tracking-widest font-bold">Active Team ({activeTeam.mode})</p>
@@ -163,7 +163,7 @@ export default function DashboardPage()
                        return friendly || dId;
                      }).join(', ')}
                    </p>
-                   <p className="text-[#a0a0a0] text-sm mb-3">Constructor: <span className="uppercase text-white">{activeTeam.constructor.replace('_', ' ')}</span></p>
+                   <p className="text-[#a0a0a0] text-sm mb-3">Constructor: <span className="uppercase text-white">{(activeTeam.constructorId || activeTeam.constructor || 'N/A').toString().replace('_', ' ')}</span></p>
                    <div className="flex justify-between">
                      <span className="font-display text-[#ffd700] text-sm shrink-0">Cost: ${(activeTeam.totalCost / 1_000_000).toFixed(1)}M</span>
                      <span className="text-[#00d4aa] text-xs uppercase tracking-widest font-bold cursor-pointer hover:underline">View Predictions →</span>

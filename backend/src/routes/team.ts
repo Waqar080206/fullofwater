@@ -32,7 +32,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     userId: req.user!.userId,
     raceId,
     drivers,
-    constructor,
+    constructorId: constructor,
     totalCost,
     mode: mode || 'free'
   });
@@ -55,7 +55,7 @@ router.put('/:raceId', async (req: AuthRequest, res: Response) => {
 
   const team = await Team.findOneAndUpdate(
     { userId: req.user!.userId, raceId: req.params.raceId },
-    { drivers, constructor, totalCost, mode: mode || 'free' },
+    { drivers, constructorId: constructor, totalCost, mode: mode || 'free' },
     { new: true }
   );
   res.json(team);
