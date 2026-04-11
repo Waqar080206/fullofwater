@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { ethers } from 'ethers';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
+import Transaction from '../models/Transaction'; // Add this near your other imports at the top!
 
 const router = Router();
 
@@ -57,6 +58,49 @@ router.get('/me', async (req: Request, res: Response) => {
     res.json({ user });
   } catch (err) {
     res.status(401).json({ error: 'Token invalid' });
+  }
+});
+
+// POST /api/auth/sync-balance
+// Body (optional): { transactionType: 'BUY' | 'SELL', amount: number, ethAmount: number }
+// Fetches true on-chain GameCoin balance and updates MongoDB
+router.post('/sync-balance', async (req: Request, res: Response) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No token' });
+
+  try {
+    const verified = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    const user = await User.findById(verified.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Remember what they had before the sync
+    const previousBalance = user.gameCoins || 0; 
+
+    // Fetch the real balance from the smart contract
+    const { getGameCoinBalanceOnChain } = await import('../services/blockchain');
+    const onChainBalance = await getGameCoinBalanceOnChain(user.walletAddress);
+
+    // Save the exact number into MongoDB
+    user.gameCoins = onChainBalance;
+    await user.save();
+
+    // If the frontend told us what type of transaction just happened, record it!
+    const { transactionType, amount, ethAmount } = req.body;
+    if (transactionType && amount) {
+      await Transaction.create({
+        userId: user._id,
+        type: transactionType,
+        gameCoinAmount: amount,
+        ethAmount: ethAmount || 0,
+        previousBalance: previousBalance,
+        newBalance: onChainBalance,
+      });
+    }
+
+    res.json({ success: true, gameCoins: onChainBalance });
+  } catch (err) {
+    console.error('Wallet sync error:', err);
+    res.status(500).json({ error: 'Failed to sync balance' });
   }
 });
 
